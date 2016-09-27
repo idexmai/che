@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPED;
 
 /**
@@ -127,7 +126,6 @@ public class WorkspaceImpl implements Workspace {
         }
         if (config != null) {
             this.config = new WorkspaceConfigImpl(config);
-            this.name = config.getName();
         }
         if (runtime != null) {
             this.runtime = new WorkspaceRuntimeImpl(runtime);
@@ -263,19 +261,15 @@ public class WorkspaceImpl implements Workspace {
                '}';
     }
 
-    // TODO find better solution
     /**
      * Helps to synchronize workspace name with config name.
      * This can be partially done by {@link PrePersist}
      * and by {@link PreUpdate}, but if an existing configuration is updated
      * with a new name then neither pre-persist nor pre-update is triggered
-     * for workspace object.
-     * This method is called by internal components when needed.
+     * for workspace object. This method is called by internal components when needed.
      */
     public void syncName() {
-        if (config != null) {
-            name = config.getName();
-        }
+        name = config == null ? null : config.getName();
     }
 
     /**
