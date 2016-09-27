@@ -19,6 +19,7 @@ import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
 import org.eclipse.che.ide.api.oauth.OAuth2Authenticator;
 import org.eclipse.che.plugin.svn.ide.SubversionClientService;
+import org.eclipse.che.plugin.svn.shared.CLIOutputWithRevisionResponse;
 import org.eclipse.che.security.oauth.OAuthCallback;
 import org.eclipse.che.security.oauth.OAuthStatus;
 
@@ -83,12 +84,13 @@ public class SubversionAuthenticatorImpl implements OAuth2Authenticator, OAuthCa
 
     @Override
     public void onLogInClicked() {
-        clientService.saveCredentials(authenticationUrl, view.getUserName(), view.getPassword()).then(new Operation<Void>() {
-            @Override
-            public void apply(Void arg) throws OperationException {
-                onAuthenticated(OAuthStatus.fromValue(3));
-            }
-        });
+        clientService.checkout(authenticationUrl, view.getUserName(), view.getPassword(), null, null, false)
+                     .then(new Operation<CLIOutputWithRevisionResponse>() {
+                         @Override
+                         public void apply(CLIOutputWithRevisionResponse arg) throws OperationException {
+                             onAuthenticated(OAuthStatus.fromValue(3));
+                         }
+                     });
         view.closeDialog();
     }
 

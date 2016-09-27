@@ -30,6 +30,9 @@ import org.eclipse.che.plugin.svn.ide.SubversionExtensionLocalizationConstants;
  */
 public class SubversionAuthenticatorViewImpl extends Window implements SubversionAuthenticatorView {
 
+    @UiField(provided = true)
+    final SubversionExtensionLocalizationConstants locale;
+
     interface SubversionAuthenticatorImplUiBinder extends UiBinder<Widget, SubversionAuthenticatorViewImpl> {
     }
 
@@ -46,6 +49,7 @@ public class SubversionAuthenticatorViewImpl extends Window implements Subversio
 
     @Inject
     public SubversionAuthenticatorViewImpl(SubversionExtensionLocalizationConstants locale) {
+        this.locale = locale;
         Widget widget = uiBinder.createAndBindUi(this);
         this.setWidget(widget);
         this.setTitle(locale.authenticatorTitle());

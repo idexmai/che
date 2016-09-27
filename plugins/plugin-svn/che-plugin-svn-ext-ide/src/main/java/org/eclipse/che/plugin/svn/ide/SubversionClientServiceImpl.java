@@ -25,6 +25,7 @@ import org.eclipse.che.plugin.svn.shared.AddRequest;
 import org.eclipse.che.plugin.svn.shared.CLIOutputResponse;
 import org.eclipse.che.plugin.svn.shared.CLIOutputResponseList;
 import org.eclipse.che.plugin.svn.shared.CLIOutputWithRevisionResponse;
+import org.eclipse.che.plugin.svn.shared.CheckoutRequest;
 import org.eclipse.che.plugin.svn.shared.CleanupRequest;
 import org.eclipse.che.plugin.svn.shared.CommitRequest;
 import org.eclipse.che.plugin.svn.shared.CopyRequest;
@@ -54,6 +55,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.eclipse.che.ide.resource.Path.toList;
 
 /**
@@ -208,6 +210,21 @@ public class SubversionClientServiceImpl implements SubversionClientService {
                           .withDepth(depth)
                           .withIgnoreExternals(ignoreExternals)
                           .withAccept(accept);
+
+        return asyncRequestFactory.createPostRequest(getBaseUrl() + "/update", request)
+                                  .loader(loader)
+                                  .send(dtoUnmarshallerFactory.newUnmarshaller(CLIOutputWithRevisionResponse.class));
+    }
+
+    @Override
+    public Promise<CLIOutputWithRevisionResponse> checkout(String url, String login, String password, String revision, String depth,
+                                                           boolean ignoreExternals) {
+        final CheckoutRequest request = dtoFactory.createDto(CheckoutRequest.class).withUrl(url)
+                                                  .withLogin(login)
+                                                  .withPassword(password)
+                                                  .withRevision(revision)
+                                                  .withDepth(depth)
+                                                  .withIgnoreExternals(ignoreExternals);
 
         return asyncRequestFactory.createPostRequest(getBaseUrl() + "/update", request)
                                   .loader(loader)

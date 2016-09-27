@@ -228,23 +228,7 @@ public class SubversionApi {
                          .withErrOutput(result.getStderr());
     }
 
-    /**
-     * Perform an "svn checkout" based on the request.
-     *
-     * @param request
-     *         the request
-     * @return the response
-     * @throws IOException
-     *         if there is a problem executing the command
-     * @throws SubversionException
-     *         if there is a Subversion issue
-     */
     public CLIOutputWithRevisionResponse checkout(final CheckoutRequest request)
-            throws IOException, SubversionException {
-        return checkout(request, null);
-    }
-
-    public CLIOutputWithRevisionResponse checkout(final CheckoutRequest request, final String[] credentials)
             throws IOException, SubversionException {
         final File projectPath = new File(request.getProjectPath());
         final List<String> cliArgs = defaultArgs();
@@ -263,6 +247,12 @@ public class SubversionApi {
         cliArgs.add(request.getUrl());
         cliArgs.add(projectPath.getAbsolutePath());
 
+        String login = request.getLogin();
+        String password = request.getPassword();
+        String[] credentials = null;
+        if (!isNullOrEmpty(login) && !isNullOrEmpty(password)) {
+            credentials = new String[] {login, password};
+        }
         CommandLineResult result = runCommand(null, cliArgs, projectPath, request.getPaths(), credentials, request.getUrl());
 
         return DtoFactory.getInstance().createDto(CLIOutputWithRevisionResponse.class)
@@ -830,9 +820,9 @@ public class SubversionApi {
      * @return list of arguments
      */
     private List<String> defaultArgs() {
-        List<String> args = new ArrayList<String>();
+        List<String> args = new ArrayList<>();
 
-        args.add("--no-auth-cache");
+//        args.add("--no-auth-cache");
         args.add("--non-interactive");
         args.add("--trust-server-cert");
 
@@ -1078,9 +1068,9 @@ public class SubversionApi {
         final CommandLineResult result = runCommand(null, uArgs, projectPath, Arrays.asList(request.getPath()));
 
         final GetRevisionsResponse response = DtoFactory.getInstance().createDto(GetRevisionsResponse.class)
-                                                .withCommand(result.getCommandLine().toString())
-                                                .withOutput(result.getStdout())
-                                                .withErrOutput(result.getStderr());
+                                                        .withCommand(result.getCommandLine().toString())
+                                                        .withOutput(result.getStdout())
+                                                        .withErrOutput(result.getStderr());
 
         if (result.getExitCode() == 0) {
             List<String> revisions = result.getStdout().parallelStream()

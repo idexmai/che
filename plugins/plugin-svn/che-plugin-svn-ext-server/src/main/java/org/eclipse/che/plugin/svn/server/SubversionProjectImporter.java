@@ -84,24 +84,12 @@ public class SubversionProjectImporter implements ProjectImporter {
             throw new IOException("Project cannot be imported into \"" + baseFolder.getName() + "\".  "
                                   + "It is not a folder.");
         }
-        Credentials credentials = null;
+
         final String location = sourceStorage.getLocation();
         try {
-            credentials = credentialsProvider.getCredentials(location);
-        } catch (CredentialsException e) {
-            LOG.error(e.getMessage(), e);
-        }
-        try {
-            if (credentials != null) {
-                subversionApi.checkout(newDto(CheckoutRequest.class)
-                                               .withProjectPath(baseFolder.getVirtualFile().toIoFile().getAbsolutePath())
-                                               .withUrl(location),
-                                       new String[]{credentials.getUsername(), credentials.getPassword()});
-            } else {
-                subversionApi.checkout(newDto(CheckoutRequest.class)
-                                               .withProjectPath(baseFolder.getVirtualFile().toIoFile().getAbsolutePath())
-                                               .withUrl(location));
-            }
+            subversionApi.checkout(newDto(CheckoutRequest.class)
+                                           .withProjectPath(baseFolder.getVirtualFile().toIoFile().getAbsolutePath())
+                                           .withUrl(location));
         } catch (SubversionException exception) {
             if (exception.getMessage().contains("Authentication failed")) {
                 throw new UnauthorizedException("Authentication required",
