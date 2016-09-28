@@ -11,7 +11,6 @@
 package org.eclipse.che.plugin.svn.server;
 
 import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.core.ErrorCodes;
 import org.eclipse.che.api.core.ForbiddenException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
@@ -20,18 +19,12 @@ import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.project.server.FolderEntry;
 import org.eclipse.che.api.project.server.importer.ProjectImporter;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import java.io.IOException;
 
-import org.eclipse.che.plugin.svn.server.credentials.CredentialsException;
-import org.eclipse.che.plugin.svn.server.credentials.CredentialsProvider;
-import org.eclipse.che.plugin.svn.server.credentials.CredentialsProvider.Credentials;
 import org.eclipse.che.plugin.svn.shared.CheckoutRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
@@ -41,19 +34,13 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 @Singleton
 public class SubversionProjectImporter implements ProjectImporter {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SubversionProjectImporter.class);
-
     public static final String ID = "subversion";
 
     private final SubversionApi subversionApi;
 
-    private final CredentialsProvider credentialsProvider;
-
     @Inject
-    public SubversionProjectImporter(final CredentialsProvider credentialsProvider,
-                                     final SubversionApi subversionApi) {
+    public SubversionProjectImporter(final SubversionApi subversionApi) {
         this.subversionApi = subversionApi;
-        this.credentialsProvider = credentialsProvider;
     }
 
     @Override
@@ -85,21 +72,9 @@ public class SubversionProjectImporter implements ProjectImporter {
                                   + "It is not a folder.");
         }
 
-        final String location = sourceStorage.getLocation();
-        try {
-            subversionApi.checkout(newDto(CheckoutRequest.class)
-                                           .withProjectPath(baseFolder.getVirtualFile().toIoFile().getAbsolutePath())
-                                           .withUrl(location));
-        } catch (SubversionException exception) {
-            if (exception.getMessage().contains("Authentication failed")) {
-                throw new UnauthorizedException("Authentication required",
-                                                ErrorCodes.UNAUTHORIZED_VCS_OPERATION,
-                                                ImmutableMap.of("providerName", "svn",
-                                                                "authenticateUrl", location));
-            } else {
-                throw exception;
-            }
-        }
+        subversionApi.checkout(newDto(CheckoutRequest.class)
+                                       .withProjectPath(baseFolder.getVirtualFile().toIoFile().getAbsolutePath())
+                                       .withUrl(sourceStorage.getLocation()));
     }
 
     @Override

@@ -29,6 +29,7 @@ import org.eclipse.che.ide.api.importer.AbstractImporter;
 import org.eclipse.che.ide.api.oauth.OAuth2Authenticator;
 import org.eclipse.che.ide.api.oauth.OAuth2AuthenticatorRegistry;
 import org.eclipse.che.ide.api.oauth.OAuth2AuthenticatorUrlProvider;
+import org.eclipse.che.ide.api.oauth.SubversionAuthenticator;
 import org.eclipse.che.ide.api.project.MutableProjectConfig;
 import org.eclipse.che.ide.api.project.wizard.ImportProjectNotificationSubscriberFactory;
 import org.eclipse.che.ide.api.project.wizard.ProjectNotificationSubscriber;
@@ -44,7 +45,8 @@ import java.util.Map;
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static org.eclipse.che.api.core.ErrorCodes.UNABLE_GET_PRIVATE_SSH_KEY;
-import static org.eclipse.che.api.core.ErrorCodes.UNAUTHORIZED_VCS_OPERATION;
+import static org.eclipse.che.api.core.ErrorCodes.UNAUTHORIZED_GIT_OPERATION;
+import static org.eclipse.che.api.core.ErrorCodes.UNAUTHORIZED_SVN_OPERATION;
 import static org.eclipse.che.api.git.shared.ProviderInfo.AUTHENTICATE_URL;
 import static org.eclipse.che.api.git.shared.ProviderInfo.PROVIDER_NAME;
 import static org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper.createFromAsyncRequest;
@@ -60,6 +62,7 @@ public class ProjectImporter extends AbstractImporter {
     private final CoreLocalizationConstant    localizationConstant;
     private final ProjectResolver             projectResolver;
     private final String                      restContext;
+    private final SubversionAuthenticator     svnAuthenticator;
     private final OAuth2AuthenticatorRegistry oAuth2AuthenticatorRegistry;
 
 
@@ -69,11 +72,13 @@ public class ProjectImporter extends AbstractImporter {
                            AppContext appContext,
                            ProjectResolver projectResolver,
                            @RestContext String restContext,
+                           SubversionAuthenticator svnAuthenticator,
                            OAuth2AuthenticatorRegistry oAuth2AuthenticatorRegistry) {
         super(appContext, subscriberFactory);
         this.localizationConstant = localizationConstant;
         this.projectResolver = projectResolver;
         this.restContext = restContext;
+        this.svnAuthenticator = svnAuthenticator;
         this.oAuth2AuthenticatorRegistry = oAuth2AuthenticatorRegistry;
     }
 
@@ -131,15 +136,42 @@ public class ProjectImporter extends AbstractImporter {
                          .catchErrorPromise(new Function<PromiseError, Promise<Project>>() {
                              @Override
                              public Promise<Project> apply(PromiseError exception) throws FunctionException {
+                                 final Map<String, String> attributes = ExceptionUtils.getAttributes(exception.getCause());
+                                 final String providerName = attributes.get(PROVIDER_NAME);
                                  subscriber.onFailure(exception.getCause().getMessage());
 
+                                 final String authenticateUrl = attributes.get(AUTHENTICATE_URL);
                                  switch (getErrorCode(exception.getCause())) {
                                      case UNABLE_GET_PRIVATE_SSH_KEY:
                                          throw new IllegalStateException(localizationConstant.importProjectMessageUnableGetSshKey());
-                                     case UNAUTHORIZED_VCS_OPERATION:
-                                         final Map<String, String> attributes = ExceptionUtils.getAttributes(exception.getCause());
-                                         final String providerName = attributes.get(PROVIDER_NAME);
-                                         final String authenticateUrl = attributes.get(AUTHENTICATE_URL);
+                                     case UNAUTHORIZED_SVN_OPERATION:
+                                         createFromAsyncRequest(new RequestCall<Project>() {
+                                             @Override
+                                             public void makeCall(final AsyncCallback<Project> callback) {
+                                                 svnAuthenticator.authenticate(authenticateUrl, path, new AsyncCallback<Void>() {
+                                                     @Override
+                                                     public void onFailure(Throwable caught) {
+                                                         callback.onFailure(new Exception(caught.getMessage()));
+                                                     }
+
+                                                     @Override
+                                                     public void onSuccess(Void result) {
+//                                                         doImport(path, sourceStorage).then(new Operation<Project>() {
+//                                                             @Override
+//                                                             public void apply(Project project) throws OperationException {
+//                                                                 callback.onSuccess(project);
+//                                                             }
+//                                                         }).catchError(new Operation<PromiseError>() {
+//                                                             @Override
+//                                                             public void apply(PromiseError error) throws OperationException {
+//                                                                 callback.onFailure(error.getCause());
+//                                                             }
+//                                                         });
+                                                     }
+                                                 });
+                                             }
+                                         });
+                                     case UNAUTHORIZED_GIT_OPERATION:
                                          if (!Strings.isNullOrEmpty(providerName) && !Strings.isNullOrEmpty(authenticateUrl)) {
                                              return authUserAndRecallImport(providerName,
                                                                             authenticateUrl,
@@ -170,8 +202,7 @@ public class ProjectImporter extends AbstractImporter {
                     authenticator = oAuth2AuthenticatorRegistry.getAuthenticator("default");
                 }
 
-                authenticator.authenticate(authenticator.getProviderName().equals("svn") ? authenticateUrl :
-                                           OAuth2AuthenticatorUrlProvider.get(restContext, authenticateUrl),
+                authenticator.authenticate(OAuth2AuthenticatorUrlProvider.get(restContext, authenticateUrl),
                                            new AsyncCallback<OAuthStatus>() {
                                                @Override
                                                public void onFailure(Throwable caught) {
@@ -200,6 +231,10 @@ public class ProjectImporter extends AbstractImporter {
                                            });
             }
         });
+    }
+
+    private void main(String[] argss) {
+
     }
 
 }

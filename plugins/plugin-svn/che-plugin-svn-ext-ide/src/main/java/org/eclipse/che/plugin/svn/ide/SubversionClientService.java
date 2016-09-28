@@ -164,7 +164,7 @@ public interface SubversionClientService {
      */
     Promise<CLIOutputWithRevisionResponse> update(Path project, Path[] paths, String revision, String depth, boolean ignoreExternals, String accept);
 
-    Promise<CLIOutputWithRevisionResponse> checkout(String url, String login, String password, String revision, String depth, boolean ignoreExternals);
+    Promise<CLIOutputWithRevisionResponse> checkout(Path project, String url, String login, String password, String revision, String depth, boolean ignoreExternals);
 
     Promise<CLIOutputResponse> showLog(Path project, Path[] paths, String revision);
 

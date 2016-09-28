@@ -11,12 +11,15 @@
 package org.eclipse.che.plugin.svn.server;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.io.Files;
 import com.google.common.net.MediaType;
 import com.google.inject.Singleton;
 
+import org.eclipse.che.api.core.ErrorCodes;
 import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.util.LineConsumerFactory;
 import org.eclipse.che.api.vfs.util.DeleteOnCloseFileInputStream;
 import org.eclipse.che.commons.lang.IoUtil;
@@ -90,7 +93,6 @@ public class SubversionApi {
 
     private static Logger LOG = LoggerFactory.getLogger(SubversionApi.class);
 
-    private final CredentialsProvider   credentialsProvider;
     private final RepositoryUrlProvider repositoryUrlProvider;
     private final SshScriptProvider     sshScriptProvider;
     protected     LineConsumerFactory   svnOutputPublisherFactory;
@@ -99,7 +101,6 @@ public class SubversionApi {
     public SubversionApi(CredentialsProvider credentialsProvider,
                          RepositoryUrlProvider repositoryUrlProvider,
                          SshScriptProvider sshScriptProvider) {
-        this.credentialsProvider = credentialsProvider;
         this.repositoryUrlProvider = repositoryUrlProvider;
         this.sshScriptProvider = sshScriptProvider;
     }
@@ -229,7 +230,7 @@ public class SubversionApi {
     }
 
     public CLIOutputWithRevisionResponse checkout(final CheckoutRequest request)
-            throws IOException, SubversionException {
+            throws IOException, SubversionException, UnauthorizedException {
         final File projectPath = new File(request.getProjectPath());
         final List<String> cliArgs = defaultArgs();
 
@@ -253,13 +254,25 @@ public class SubversionApi {
         if (!isNullOrEmpty(login) && !isNullOrEmpty(password)) {
             credentials = new String[] {login, password};
         }
-        CommandLineResult result = runCommand(null, cliArgs, projectPath, request.getPaths(), credentials, request.getUrl());
 
-        return DtoFactory.getInstance().createDto(CLIOutputWithRevisionResponse.class)
-                         .withCommand(result.getCommandLine().toString())
-                         .withOutput(result.getStdout())
-                         .withErrOutput(result.getStderr())
-                         .withRevision(SubversionUtils.getCheckoutRevision(result.getStdout()));
+        try {
+            CommandLineResult result = runCommand(null, cliArgs, projectPath, request.getPaths(), credentials, request.getUrl());
+
+            return DtoFactory.getInstance().createDto(CLIOutputWithRevisionResponse.class)
+                             .withCommand(result.getCommandLine().toString())
+                             .withOutput(result.getStdout())
+                             .withErrOutput(result.getStderr())
+                             .withRevision(SubversionUtils.getCheckoutRevision(result.getStdout()));
+        } catch (SubversionException exception) {
+            if (exception.getMessage().contains("Authentication failed")) {
+                throw new UnauthorizedException("Authentication required",
+                                                ErrorCodes.UNAUTHORIZED_SVN_OPERATION,
+                                                ImmutableMap.of("providerName", "svn",
+                                                                "authenticateUrl", request.getUrl()));
+            } else {
+                throw exception;
+            }
+        }
     }
 
     /**
@@ -846,9 +859,8 @@ public class SubversionApi {
                                          List<String> args,
                                          File projectPath,
                                          List<String> paths) throws IOException, SubversionException {
-        String[] credentials = getCredentialArgs(projectPath.getAbsolutePath());
         String repoUrl = getRepositoryUrl(projectPath.getAbsolutePath());
-        return runCommand(env, args, projectPath, paths, credentials, repoUrl);
+        return runCommand(env, args, projectPath, paths, null, repoUrl);
     }
 
     private CommandLineResult runCommand(Map<String, String> env,
@@ -919,20 +931,6 @@ public class SubversionApi {
         }
 
         return result;
-    }
-
-    private String[] getCredentialArgs(final String projectPath) throws SubversionException, IOException {
-        Credentials credentials;
-        try {
-            credentials = this.credentialsProvider.getCredentials(getRepositoryUrl(projectPath));
-        } catch (final CredentialsException e) {
-            credentials = null;
-        }
-        if (credentials != null) {
-            return new String[]{credentials.getUsername(), credentials.getPassword()};
-        } else {
-            return null;
-        }
     }
 
     public String getRepositoryUrl(final String projectPath) throws SubversionException, IOException {

@@ -55,7 +55,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.eclipse.che.ide.resource.Path.toList;
 
 /**
@@ -217,16 +216,18 @@ public class SubversionClientServiceImpl implements SubversionClientService {
     }
 
     @Override
-    public Promise<CLIOutputWithRevisionResponse> checkout(String url, String login, String password, String revision, String depth,
+    public Promise<CLIOutputWithRevisionResponse> checkout(Path project, String url, String login, String password, String revision, String depth,
                                                            boolean ignoreExternals) {
-        final CheckoutRequest request = dtoFactory.createDto(CheckoutRequest.class).withUrl(url)
+        final CheckoutRequest request = dtoFactory.createDto(CheckoutRequest.class)
+                                                  .withUrl(url)
+                                                  .withProjectPath(project.toString())
                                                   .withLogin(login)
                                                   .withPassword(password)
                                                   .withRevision(revision)
                                                   .withDepth(depth)
                                                   .withIgnoreExternals(ignoreExternals);
 
-        return asyncRequestFactory.createPostRequest(getBaseUrl() + "/update", request)
+        return asyncRequestFactory.createPostRequest(getBaseUrl() + "/checkout", request)
                                   .loader(loader)
                                   .send(dtoUnmarshallerFactory.newUnmarshaller(CLIOutputWithRevisionResponse.class));
     }

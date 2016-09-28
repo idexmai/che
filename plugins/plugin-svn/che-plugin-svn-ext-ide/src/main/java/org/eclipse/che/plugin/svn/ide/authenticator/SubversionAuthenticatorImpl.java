@@ -15,32 +15,26 @@ import com.google.inject.Inject;
 
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
-import org.eclipse.che.api.promises.client.Promise;
-import org.eclipse.che.api.promises.client.callback.AsyncPromiseHelper;
-import org.eclipse.che.ide.api.oauth.OAuth2Authenticator;
+import org.eclipse.che.ide.api.oauth.SVNoperation;
+import org.eclipse.che.ide.api.oauth.SubversionAuthenticator;
+import org.eclipse.che.ide.resource.Path;
 import org.eclipse.che.plugin.svn.ide.SubversionClientService;
 import org.eclipse.che.plugin.svn.shared.CLIOutputWithRevisionResponse;
-import org.eclipse.che.security.oauth.OAuthCallback;
-import org.eclipse.che.security.oauth.OAuthStatus;
-
-import javax.validation.constraints.NotNull;
 
 import static org.eclipse.che.ide.util.StringUtils.isNullOrEmpty;
 
 /**
  * @author Igor Vinokur
  */
-public class SubversionAuthenticatorImpl implements OAuth2Authenticator, OAuthCallback, SubversionAuthenticatorViewImpl.ActionDelegate {
-
-
-    private static final String SVN = "svn";
-
-    private AsyncCallback<OAuthStatus> callback;
+public class SubversionAuthenticatorImpl implements SubversionAuthenticator, SubversionAuthenticatorViewImpl.ActionDelegate {
 
     private final SubversionAuthenticatorView view;
     private final SubversionClientService     clientService;
 
-    private String authenticationUrl;
+    private String              authenticationUrl;
+    private Path                path;
+    private AsyncCallback<Void> callback;
+    private SVNoperation        operation;
 
     @Inject
     public SubversionAuthenticatorImpl(SubversionAuthenticatorView view,
@@ -51,56 +45,44 @@ public class SubversionAuthenticatorImpl implements OAuth2Authenticator, OAuthCa
     }
 
     @Override
-    public void authenticate(String authenticationUrl, @NotNull final AsyncCallback<OAuthStatus> callback) {
+    public void authenticate(String authenticationUrl, Path path, AsyncCallback<Void> callback) {
         this.authenticationUrl = authenticationUrl;
+        this.path = path;
         this.callback = callback;
         view.cleanCredentials();
         view.showDialog();
     }
 
     @Override
-    public Promise<OAuthStatus> authenticate(String authenticationUrl) {
-        this.authenticationUrl = authenticationUrl;
-
-        return AsyncPromiseHelper.createFromAsyncRequest(new AsyncPromiseHelper.RequestCall<OAuthStatus>() {
-            @Override
-            public void makeCall(AsyncCallback<OAuthStatus> callback) {
-                SubversionAuthenticatorImpl.this.callback = callback;
-                view.showDialog();
-            }
-        });
-    }
-
-    @Override
-    public String getProviderName() {
-        return SVN;
+    public void authenticate(SVNoperation operation) {
+        this.operation = operation;
     }
 
     @Override
     public void onCancelClicked() {
-        callback.onFailure(new Exception("Authorization request rejected by user."));
+        //callback.onFailure(new Exception("Authorization request rejected by user."));
         view.closeDialog();
     }
 
     @Override
     public void onLogInClicked() {
-        clientService.checkout(authenticationUrl, view.getUserName(), view.getPassword(), null, null, false)
-                     .then(new Operation<CLIOutputWithRevisionResponse>() {
-                         @Override
-                         public void apply(CLIOutputWithRevisionResponse arg) throws OperationException {
-                             onAuthenticated(OAuthStatus.fromValue(3));
-                         }
-                     });
+        if (operation != null) {
+            operation.perform(view.getUserName(), view.getPassword());
+        } else {
+            clientService.checkout(path, authenticationUrl, view.getUserName(), view.getPassword(), null, null, false)
+                         .then(new Operation<CLIOutputWithRevisionResponse>() {
+                             @Override
+                             public void apply(CLIOutputWithRevisionResponse arg) throws OperationException {
+                                 callback.onSuccess(null);
+                                 //onAuthenticated(OAuthStatus.fromValue(3));
+                             }
+                         });
+        }
         view.closeDialog();
     }
 
     @Override
     public void onCredentialsChanged() {
         view.setEnabledLogInButton(!isNullOrEmpty(view.getUserName()) && !isNullOrEmpty(view.getPassword()));
-    }
-
-    @Override
-    public void onAuthenticated(OAuthStatus authStatus) {
-        callback.onSuccess(authStatus);
     }
 }
