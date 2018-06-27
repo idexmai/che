@@ -10,15 +10,6 @@
  */
 package org.eclipse.che.selenium.core.client;
 
-import static java.lang.String.format;
-import static java.lang.String.valueOf;
-import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPED;
-import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPING;
-import static org.eclipse.che.api.workspace.server.WsAgentMachineFinderUtil.containsWsAgentServer;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.model.workspace.Workspace;
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
@@ -36,11 +27,21 @@ import org.eclipse.che.selenium.core.workspace.MemoryMeasure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static java.lang.String.format;
+import static java.lang.String.valueOf;
+import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPED;
+import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.STOPPING;
+import static org.eclipse.che.api.workspace.server.WsAgentMachineFinderUtil.containsWsAgentServer;
+
 /**
  * @author Musienko Maxim
  * @author Dmytro Nochevnov
  */
-public abstract class AbstractTestWorkspaceServiceClient {
+public abstract class AbstractTestWorkspaceServiceClient implements TestWorkspaceServiceClient {
 
   private static final Logger LOG =
       LoggerFactory.getLogger(AbstractTestWorkspaceServiceClient.class);

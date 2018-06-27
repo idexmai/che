@@ -11,21 +11,22 @@
 package org.eclipse.che.selenium.core.workspace;
 
 import com.google.inject.Singleton;
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.commons.lang.NameGenerator;
-import org.eclipse.che.selenium.core.client.AbstractTestWorkspaceServiceClient;
+import org.eclipse.che.selenium.core.client.TestWorkspaceServiceClient;
 import org.eclipse.che.selenium.core.client.TestWorkspaceServiceClientFactory;
 import org.eclipse.che.selenium.core.user.DefaultTestUser;
 import org.eclipse.che.selenium.core.user.TestUser;
 import org.eclipse.che.selenium.core.utils.WorkspaceDtoDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * {@link TestWorkspaceProvider} implementation containing workspace pool.
@@ -43,7 +44,7 @@ public abstract class AbstractTestWorkspaceProvider implements TestWorkspaceProv
   protected final int poolSize;
   protected final DefaultTestUser defaultUser;
   protected final int defaultMemoryGb;
-  protected final AbstractTestWorkspaceServiceClient testWorkspaceServiceClient;
+  protected final TestWorkspaceServiceClient testWorkspaceServiceClient;
   protected final WorkspaceDtoDeserializer workspaceDtoDeserializer;
   protected ArrayBlockingQueue<TestWorkspace> testWorkspaceQueue;
   protected ScheduledExecutorService executor;
@@ -54,7 +55,7 @@ public abstract class AbstractTestWorkspaceProvider implements TestWorkspaceProv
       int defaultMemoryGb,
       DefaultTestUser defaultUser,
       WorkspaceDtoDeserializer workspaceDtoDeserializer,
-      AbstractTestWorkspaceServiceClient testWorkspaceServiceClient,
+      TestWorkspaceServiceClient testWorkspaceServiceClient,
       TestWorkspaceServiceClientFactory testWorkspaceServiceClientFactory) {
     this.defaultUser = defaultUser;
     this.defaultMemoryGb = defaultMemoryGb;

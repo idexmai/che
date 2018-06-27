@@ -10,16 +10,12 @@
  */
 package org.eclipse.che.selenium.site.ocpoauth;
 
-import static java.lang.String.format;
-import static org.eclipse.che.selenium.pageobject.dashboard.NewWorkspace.Stack.JAVA;
-import static org.testng.Assert.assertEquals;
-
 import com.google.inject.Inject;
 import org.eclipse.che.api.core.model.workspace.Workspace;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.selenium.core.SeleniumWebDriver;
 import org.eclipse.che.selenium.core.TestGroup;
-import org.eclipse.che.selenium.core.client.AbstractTestWorkspaceServiceClient;
+import org.eclipse.che.selenium.core.client.TestWorkspaceServiceClient;
 import org.eclipse.che.selenium.core.provider.TestDashboardUrlProvider;
 import org.eclipse.che.selenium.core.user.DefaultTestUser;
 import org.eclipse.che.selenium.core.webdriver.SeleniumWebDriverHelper;
@@ -35,6 +31,10 @@ import org.eclipse.che.selenium.pageobject.site.CheLoginPage;
 import org.eclipse.che.selenium.pageobject.site.FirstBrokerProfilePage;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
+
+import static java.lang.String.format;
+import static org.eclipse.che.selenium.pageobject.dashboard.NewWorkspace.Stack.JAVA;
+import static org.testng.Assert.assertEquals;
 
 /**
  * This test checks if existed user of Eclipse Che Multiuser deployed on OCP can log into Eclipse
@@ -84,7 +84,7 @@ public class LoginExistedUserWithOpenShiftOAuthTest {
   @Inject private Dashboard dashboard;
   @Inject private Workspaces workspaces;
   @Inject private NewWorkspace newWorkspace;
-  @Inject private AbstractTestWorkspaceServiceClient defaultUserWorkspaceServiceClient;
+  @Inject private TestWorkspaceServiceClient defaultUserWorkspaceServiceClient;
   @Inject private ToastLoader toastLoader;
   @Inject private Ide ide;
   @Inject private SeleniumWebDriverHelper seleniumWebDriverHelper;

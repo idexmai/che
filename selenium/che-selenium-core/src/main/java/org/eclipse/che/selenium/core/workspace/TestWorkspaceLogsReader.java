@@ -10,24 +10,25 @@
  */
 package org.eclipse.che.selenium.core.workspace;
 
-import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
-import static org.eclipse.che.selenium.core.utils.FileUtil.removeDirectoryIfItIsEmpty;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.Inject;
+import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
+import org.eclipse.che.api.core.util.AbstractLineConsumer;
+import org.eclipse.che.api.core.util.LineConsumer;
+import org.eclipse.che.api.core.util.ListLineConsumer;
+import org.eclipse.che.selenium.core.client.TestWorkspaceServiceClient;
+import org.eclipse.che.selenium.core.utils.process.ProcessAgent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
-import org.eclipse.che.api.core.util.AbstractLineConsumer;
-import org.eclipse.che.api.core.util.LineConsumer;
-import org.eclipse.che.api.core.util.ListLineConsumer;
-import org.eclipse.che.selenium.core.client.AbstractTestWorkspaceServiceClient;
-import org.eclipse.che.selenium.core.utils.process.ProcessAgent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
+import static org.eclipse.che.selenium.core.utils.FileUtil.removeDirectoryIfItIsEmpty;
 
 /**
  * Reads and stores the workspace logs by using command line operations. It ignores absent or empty
@@ -42,7 +43,7 @@ public abstract class TestWorkspaceLogsReader {
 
   @VisibleForTesting Logger log = LoggerFactory.getLogger(this.getClass());
 
-  @Inject @VisibleForTesting AbstractTestWorkspaceServiceClient workspaceServiceClient;
+  @Inject @VisibleForTesting TestWorkspaceServiceClient workspaceServiceClient;
 
   @Inject @VisibleForTesting ProcessAgent processAgent;
 

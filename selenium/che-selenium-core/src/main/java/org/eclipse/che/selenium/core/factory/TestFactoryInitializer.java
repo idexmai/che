@@ -10,16 +10,8 @@
  */
 package org.eclipse.che.selenium.core.factory;
 
-import static java.lang.String.format;
-import static java.util.Collections.singletonMap;
-
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLEncoder;
-import java.util.List;
-import javax.inject.Named;
 import org.eclipse.che.api.core.rest.HttpJsonRequest;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.HttpJsonResponse;
@@ -34,14 +26,23 @@ import org.eclipse.che.commons.lang.IoUtil;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.eclipse.che.selenium.core.SeleniumWebDriver;
-import org.eclipse.che.selenium.core.client.AbstractTestWorkspaceServiceClient;
 import org.eclipse.che.selenium.core.client.TestFactoryServiceClient;
+import org.eclipse.che.selenium.core.client.TestWorkspaceServiceClient;
 import org.eclipse.che.selenium.core.entrance.Entrance;
 import org.eclipse.che.selenium.core.provider.TestApiEndpointUrlProvider;
 import org.eclipse.che.selenium.core.provider.TestDashboardUrlProvider;
 import org.eclipse.che.selenium.core.provider.TestIdeUrlProvider;
 import org.eclipse.che.selenium.core.user.DefaultTestUser;
 import org.eclipse.che.selenium.core.webdriver.SeleniumWebDriverHelper;
+
+import javax.inject.Named;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLEncoder;
+import java.util.List;
+
+import static java.lang.String.format;
+import static java.util.Collections.singletonMap;
 
 /** @author Anatolii Bazko */
 @Singleton
@@ -53,7 +54,7 @@ public class TestFactoryInitializer {
   @Inject private TestApiEndpointUrlProvider apiEndpointProvider;
   @Inject private HttpJsonRequestFactory requestFactory;
   @Inject private TestFactoryServiceClient testFactoryServiceClient;
-  @Inject private AbstractTestWorkspaceServiceClient workspaceServiceClient;
+  @Inject private TestWorkspaceServiceClient workspaceServiceClient;
   @Inject private Entrance entrance;
   @Inject private SeleniumWebDriver seleniumWebDriver;
   @Inject private SeleniumWebDriverHelper seleniumWebDriverHelper;

@@ -20,11 +20,11 @@ import com.google.inject.Singleton;
 @Singleton
 public class CheTestMachineServiceClient implements TestMachineServiceClient {
 
-  private final AbstractTestWorkspaceServiceClient testWorkspaceServiceClient;
+  private final TestWorkspaceServiceClient testWorkspaceServiceClient;
 
   @Inject
   public CheTestMachineServiceClient(
-      AbstractTestWorkspaceServiceClient testWorkspaceServiceClient) {
+          TestWorkspaceServiceClient testWorkspaceServiceClient) {
     this.testWorkspaceServiceClient = testWorkspaceServiceClient;
   }
 
