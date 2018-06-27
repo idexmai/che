@@ -10,19 +10,12 @@
  */
 package org.eclipse.che.selenium.core;
 
-import static com.google.inject.name.Names.named;
-import static java.lang.Boolean.parseBoolean;
-import static java.lang.String.format;
-import static org.eclipse.che.selenium.core.utils.PlatformUtils.isMac;
-import static org.eclipse.che.selenium.core.workspace.WorkspaceTemplate.DEFAULT;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Named;
-import java.io.IOException;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.selenium.core.action.ActionsFactory;
 import org.eclipse.che.selenium.core.action.GenericActionsFactory;
@@ -63,6 +56,14 @@ import org.eclipse.che.selenium.core.workspace.TestWorkspace;
 import org.eclipse.che.selenium.core.workspace.TestWorkspaceProvider;
 import org.eclipse.che.selenium.core.workspace.TestWorkspaceUrlResolver;
 import org.eclipse.che.selenium.pageobject.PageObjectsInjectorImpl;
+
+import java.io.IOException;
+
+import static com.google.inject.name.Names.named;
+import static java.lang.Boolean.parseBoolean;
+import static java.lang.String.format;
+import static org.eclipse.che.selenium.core.utils.PlatformUtils.isMac;
+import static org.eclipse.che.selenium.core.workspace.WorkspaceTemplate.DEFAULT;
 
 /**
  * Guice module per suite.
@@ -106,8 +107,6 @@ public class CheSeleniumSuiteModule extends AbstractModule {
     bind(TestWorkspaceUrlResolver.class).to(CheTestWorkspaceUrlResolver.class);
 
     bind(AbstractTestWorkspaceServiceClient.class).to(CheTestWorkspaceServiceClient.class);
-    //
-    // bind(TestWorkspaceServiceClientFactory.class).to(CheTestWorkspaceServiceClientFactory.class);
 
     install(new FactoryModuleBuilder().build(TestUserHttpJsonRequestFactoryCreator.class));
     install(new FactoryModuleBuilder().build(CheTestWorkspaceServiceClientFactory.class));

@@ -10,10 +10,6 @@
  */
 package org.eclipse.che.selenium.dashboard.workspaces;
 
-import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
-import static org.eclipse.che.selenium.pageobject.dashboard.NewWorkspace.Stack.*;
-import static org.testng.Assert.assertEquals;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 import org.eclipse.che.api.core.model.workspace.Workspace;
@@ -26,7 +22,11 @@ import org.eclipse.che.selenium.core.webdriver.SeleniumWebDriverHelper;
 import org.eclipse.che.selenium.core.workspace.TestWorkspaceProvider;
 import org.eclipse.che.selenium.pageobject.CodenvyEditor;
 import org.eclipse.che.selenium.pageobject.ProjectExplorer;
-import org.eclipse.che.selenium.pageobject.dashboard.*;
+import org.eclipse.che.selenium.pageobject.dashboard.AddOrImportForm;
+import org.eclipse.che.selenium.pageobject.dashboard.Dashboard;
+import org.eclipse.che.selenium.pageobject.dashboard.DocumentationPage;
+import org.eclipse.che.selenium.pageobject.dashboard.NewWorkspace;
+import org.eclipse.che.selenium.pageobject.dashboard.ProjectOptions;
 import org.eclipse.che.selenium.pageobject.dashboard.stacks.Stacks;
 import org.eclipse.che.selenium.pageobject.dashboard.workspaces.WorkspaceConfig;
 import org.eclipse.che.selenium.pageobject.dashboard.workspaces.WorkspaceOverview;
@@ -36,6 +36,12 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import static org.eclipse.che.api.core.model.workspace.WorkspaceStatus.RUNNING;
+import static org.eclipse.che.selenium.pageobject.dashboard.NewWorkspace.Stack.BLANK;
+import static org.eclipse.che.selenium.pageobject.dashboard.NewWorkspace.Stack.DOT_NET;
+import static org.eclipse.che.selenium.pageobject.dashboard.NewWorkspace.Stack.JAVA;
+import static org.testng.Assert.assertEquals;
 
 /** @author Ihor Okhrimenko */
 public class AddOrImportProjectFormTest {

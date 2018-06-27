@@ -10,14 +10,7 @@
  */
 package org.eclipse.che.selenium.dashboard.workspaces;
 
-import static java.util.Arrays.asList;
-import static org.eclipse.che.selenium.pageobject.dashboard.NewWorkspace.Stack.JAVA;
-import static org.openqa.selenium.Keys.*;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.fail;
-
 import com.google.inject.Inject;
-import java.util.List;
 import org.eclipse.che.selenium.core.SeleniumWebDriver;
 import org.eclipse.che.selenium.core.client.CheTestWorkspaceServiceClient;
 import org.eclipse.che.selenium.core.client.TestProjectServiceClient;
@@ -37,6 +30,16 @@ import org.openqa.selenium.TimeoutException;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+
+import java.util.List;
+
+import static java.util.Arrays.asList;
+import static org.eclipse.che.selenium.pageobject.dashboard.NewWorkspace.Stack.JAVA;
+import static org.openqa.selenium.Keys.ARROW_DOWN;
+import static org.openqa.selenium.Keys.ARROW_UP;
+import static org.openqa.selenium.Keys.ESCAPE;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
 
 /** @author Ihor Okhrimenko */
 public class NewWorkspacePageTest {
