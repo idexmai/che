@@ -1,41 +1,56 @@
-/*******************************************************************************
- * Copyright (c) 2012-2016 Codenvy, S.A.
+/*
+ * Copyright (c) 2012-2018 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
- *******************************************************************************/
+ *   Red Hat, Inc. - initial API and implementation
+ */
 package org.eclipse.che.plugin.python.generator;
 
+import static org.eclipse.che.api.fs.server.WsPathUtils.resolve;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+import javax.inject.Inject;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.ForbiddenException;
+import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.project.server.FolderEntry;
+import org.eclipse.che.api.fs.server.FsManager;
 import org.eclipse.che.api.project.server.handlers.CreateProjectHandler;
 import org.eclipse.che.api.project.server.type.AttributeValue;
 import org.eclipse.che.plugin.python.shared.ProjectAttributes;
 
-import java.util.Map;
-
-/**
- * @author Valeriy Svydenko
- */
+/** @author Valeriy Svydenko */
 public class PythonProjectGenerator implements CreateProjectHandler {
 
-    private static final String FILE_NAME = "main.py";
+  private FsManager fsManager;
 
-    @Override
-    public void onCreateProject(FolderEntry baseFolder,
-                                Map<String, AttributeValue> attributes,
-                                Map<String, String> options) throws ForbiddenException, ConflictException, ServerException {
-        baseFolder.createFile(FILE_NAME, getClass().getClassLoader().getResourceAsStream("files/default_python_content"));
-    }
+  @Inject
+  public PythonProjectGenerator(FsManager fsManager) {
+    this.fsManager = fsManager;
+  }
 
-    @Override
-    public String getProjectType() {
-        return ProjectAttributes.PYTHON_ID;
+  @Override
+  public void onCreateProject(
+      String projectWsPath, Map<String, AttributeValue> attributes, Map<String, String> options)
+      throws ForbiddenException, ConflictException, ServerException, NotFoundException {
+    try (InputStream inputStream =
+        getClass().getClassLoader().getResourceAsStream("files/default_python_content")) {
+      fsManager.createDir(projectWsPath);
+      String wsPath = resolve(projectWsPath, "main.py");
+      fsManager.createFile(wsPath, inputStream);
+    } catch (IOException e) {
+      throw new ServerException(e);
     }
+  }
+
+  @Override
+  public String getProjectType() {
+    return ProjectAttributes.PYTHON_ID;
+  }
 }

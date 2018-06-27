@@ -1,314 +1,385 @@
 /*
- * Copyright (c) 2015-2016 Codenvy, S.A.
+ * Copyright (c) 2015-2018 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ *   Red Hat, Inc. - initial API and implementation
  */
 'use strict';
 
+import {CheEnvironmentRegistry} from '../../../components/api/environment/che-environment-registry.factory';
+import {EnvironmentManager} from '../../../components/api/environment/environment-manager';
+import {IEnvironmentManagerMachine} from '../../../components/api/environment/environment-manager-machine';
+import {CreateWorkspaceSvc} from './create-workspace.service';
+import {NamespaceSelectorSvc} from './namespace-selector/namespace-selector.service';
+import {StackSelectorSvc} from './stack-selector/stack-selector.service';
+import {RandomSvc} from '../../../components/utils/random.service';
+import {CheNotification} from '../../../components/notification/che-notification.factory';
+import {
+  ICheButtonDropdownMainAction,
+  ICheButtonDropdownOtherAction
+} from '../../../components/widget/button-dropdown/che-button-dropdown.directive';
+
 /**
- * @ngdoc controller
- * @name workspaces.create.workspace.controller:CreateWorkspaceController
- * @description This class is handling the controller for workspace creation
- * @author Ann Shumilova
- * @author Oleksii Orel
+ * This class is handling the controller for workspace creation.
+ *
+ * @author Oleksii Kurinnyi
  */
 export class CreateWorkspaceController {
 
+  static $inject = ['$mdDialog', '$timeout', 'cheEnvironmentRegistry', 'createWorkspaceSvc', 'namespaceSelectorSvc', 'stackSelectorSvc',
+   'randomSvc', '$log', 'cheNotification'];
+
   /**
-   * Default constructor that is using resource
-   * @ngInject for Dependency injection
+   * Dropdown button config.
    */
-  constructor($location, cheAPI, cheNotification, lodash, $rootScope, cheEnvironmentRegistry) {
-    this.$location = $location;
-    this.cheAPI = cheAPI;
-    this.cheNotification = cheNotification;
-    this.lodash = lodash;
-    this.$rootScope = $rootScope;
+  headerCreateButtonConfig: {
+    mainAction: ICheButtonDropdownMainAction,
+    otherActions: Array<ICheButtonDropdownOtherAction>
+  };
+  private $mdDialog: ng.material.IDialogService;
+  /**
+   * Timeout service.
+   */
+  private $timeout: ng.ITimeoutService;
+  /**
+   * The registry of environment managers.
+   */
+  private cheEnvironmentRegistry: CheEnvironmentRegistry;
+  /**
+   * Workspace creation service.
+   */
+  private createWorkspaceSvc: CreateWorkspaceSvc;
+  /**
+   * Namespace selector service.
+   */
+  private namespaceSelectorSvc: NamespaceSelectorSvc;
+  /**
+   * Stack selector service.
+   */
+  private stackSelectorSvc: StackSelectorSvc;
+  /**
+   * Generator for random strings.
+   */
+  private randomSvc: RandomSvc;
+  /**
+   * Logging service.
+   */
+  private $log: ng.ILogService;
+  /**
+   * Notification factory.
+   */
+  private cheNotification: CheNotification;
+  /**
+   * The environment manager.
+   */
+  private environmentManager: EnvironmentManager;
+  /**
+   * The selected stack.
+   */
+  private stack: che.IStack;
+  /**
+   * The selected namespace ID.
+   */
+  private namespaceId: string;
+  /**
+   * The list of machines of selected stack.
+   */
+  private stackMachines: Array<IEnvironmentManagerMachine>;
+  /**
+   * Desired memory limit by machine name.
+   */
+  private memoryByMachine: {[name: string]: number};
+  /**
+   * The map of forms.
+   */
+  private forms: Map<string, ng.IFormController>;
+  /**
+   * The list of names of existing workspaces.
+   */
+  private usedNamesList: string[];
+  /**
+   * The name of workspace.
+   */
+  private workspaceName: string;
+  /**
+   * Hide progress loader if <code>true</code>.
+   */
+  private hideLoader: boolean;
+
+  /**
+   * Default constructor that is using resource injection
+   */
+  constructor($mdDialog: ng.material.IDialogService,
+              $timeout: ng.ITimeoutService,
+              cheEnvironmentRegistry: CheEnvironmentRegistry,
+              createWorkspaceSvc: CreateWorkspaceSvc,
+              namespaceSelectorSvc: NamespaceSelectorSvc,
+              stackSelectorSvc: StackSelectorSvc,
+              randomSvc: RandomSvc,
+              $log: ng.ILogService,
+              cheNotification: CheNotification) {
+    this.$mdDialog = $mdDialog;
+    this.$timeout = $timeout;
     this.cheEnvironmentRegistry = cheEnvironmentRegistry;
-    this.stackMachines = {};
-
-    this.selectSourceOption = 'select-source-recipe';
-
-    // default RAM value
-    this.workspaceRam = 2 * Math.pow(1024,3);
-
-    this.editorOptions = {
-      lineWrapping: true,
-      lineNumbers: false,
-      matchBrackets: true,
-      mode: 'application/json'
-    };
-
-    // fetch default recipe if we haven't one
-    if (!cheAPI.getRecipeTemplate().getDefaultRecipe()) {
-      cheAPI.getRecipeTemplate().fetchDefaultRecipe();
-    }
-
-    this.stack = null;
-    this.recipeUrl = null;
-    this.recipeScript = null;
-    this.recipeFormat = null;
-    this.importWorkspace = '';
-    this.defaultWorkspaceName = null;
+    this.createWorkspaceSvc = createWorkspaceSvc;
+    this.namespaceSelectorSvc = namespaceSelectorSvc;
+    this.stackSelectorSvc = stackSelectorSvc;
+    this.randomSvc = randomSvc;
+    this.$log = $log;
+    this.cheNotification = cheNotification;
 
     this.usedNamesList = [];
-    cheAPI.cheWorkspace.fetchWorkspaces().then(() => {
-      let workspaces = cheAPI.cheWorkspace.getWorkspaces();
-      workspaces.forEach((workspace) => {
-        this.usedNamesList.push(workspace.config.name);
-      });
+    this.stackMachines = [];
+    this.memoryByMachine = {};
+    this.forms = new Map();
+
+    this.namespaceId = this.namespaceSelectorSvc.getNamespaceId();
+    this.buildListOfUsedNames().then(() => {
+      this.workspaceName = this.randomSvc.getRandString({prefix: 'wksp-', list: this.usedNamesList});
+      this.reValidateName();
     });
 
-    $rootScope.showIDE = false;
+    // loader should be hidden and page content shown
+    // when stacks selector is rendered
+    // and default stack is selected
+    this.hideLoader = false;
+
+    // header toolbar
+    // dropdown button config
+    this.headerCreateButtonConfig = {
+      mainAction: {
+        title: 'Create',
+        type: 'button',
+        action: () => {
+          this.createWorkspace().then((workspace: che.IWorkspace) => {
+            this.createWorkspaceSvc.redirectToDetails(workspace);
+          });
+        }
+      },
+      otherActions: [{
+        title: 'Open in IDE',
+        type: 'button',
+        action: () => {
+          this.createWorkspace().then((workspace: che.IWorkspace) => {
+            this.createWorkspaceSvc.redirectToIDE(workspace);
+          });
+        },
+        orderNumber: 1
+      }]
+    };
   }
 
   /**
-   * Callback when tab has been change
-   * @param tabName  the select tab name
-   */
-  setStackTab(tabName) {
-    if (tabName === 'custom-stack') {
-      this.cheStackLibrarySelecter(null);
-      this.isCustomStack = true;
-      this.generateWorkspaceName();
-    }
-  }
-
-  /**
-   * Gets object keys from target object.
+   * Callback which is called when stack is selected.
    *
-   * @param targetObject
-   * @returns [*]
+   * @param {string} stackId the stack ID
    */
-  getObjectKeys(targetObject) {
-    return Object.keys(targetObject);
-  }
+  onStackSelected(stackId: string): void {
+    // tiny timeout for templates selector to be rendered
+    this.$timeout(() => {
+      this.hideLoader = true;
+    }, 10);
 
-  /**
-   * Callback when stack has been set
-   * @param stack  the selected stack
-   */
-  cheStackLibrarySelecter(stack) {
-    if (stack) {
-      this.isCustomStack = false;
-      this.recipeUrl = null;
-    }
-    if (this.stack !== stack && stack && stack.workspaceConfig && stack.workspaceConfig.name) {
-      let workspaceName = stack.workspaceConfig.name;
-      if (this.usedNamesList.includes(workspaceName)) {
-        this.generateWorkspaceName();
-      } else {
-        this.setWorkspaceName(workspaceName);
-      }
-    } else {
-      this.generateWorkspaceName();
-    }
-    this.stack = stack;
-  }
+    this.stack = this.stackSelectorSvc.getStackById(stackId);
 
-  /**
-   * Set workspace name
-   * @param name
-   */
-  setWorkspaceName(name) {
-    if (!name) {
+    if (!this.stack.workspaceConfig) {
+      this.memoryByMachine = {};
+      this.stackMachines = [];
       return;
     }
-    if (!this.defaultWorkspaceName || this.defaultWorkspaceName === this.workspaceName) {
-      this.defaultWorkspaceName = name;
-      this.workspaceName = angular.copy(name);
-    }
-  }
 
-  /**
-   * Generates a default workspace name
-   */
-  generateWorkspaceName() {
-    // starts with wksp
-    let name = 'wksp';
-    name += '-' + (('0000' + (Math.random() * Math.pow(36, 4) << 0).toString(36)).slice(-4)); // jshint ignore:line
-    this.setWorkspaceName(name);
-  }
-
-  /**
-   * Create a new workspace
-   */
-  createWorkspace() {
-    let source = {};
-    source.type = 'dockerfile';
-    //User provides recipe URL or recipe's content:
-    if (this.isCustomStack) {
-      this.stack = null;
-      source.type = 'environment';
-      source.format = this.recipeFormat;
-      if (this.recipeUrl && this.recipeUrl.length > 0) {
-        source.location = this.recipeUrl;
-        this.submitWorkspace(source);
-      } else {
-        source.content = this.recipeScript;
-        this.submitWorkspace(source);
-      }
-    } else if (this.selectSourceOption === 'select-source-import') {
-      this.importWorkspaceConfig.name = this.workspaceName;
-      this.setEnvironment(this.importWorkspaceConfig);
-      let creationPromise = this.cheAPI.getWorkspace().createWorkspaceFromConfig(null, this.importWorkspaceConfig);
-      this.redirectAfterSubmitWorkspace(creationPromise);
-    } else {
-      //check predefined recipe location
-      if (this.stack && this.stack.source && this.stack.source.type === 'location') {
-        this.recipeUrl = this.stack.source.origin;
-        source.location = this.recipeUrl;
-        this.submitWorkspace(source);
-      } else {
-        source = this.getSourceFromStack(this.stack);
-        this.submitWorkspace(source);
-      }
-    }
-  }
-
-  /**
-   * Perform actions when content of workspace config is changed.
-   */
-  onWorkspaceSourceChange() {
-    this.importWorkspaceConfig = null;
-    this.importWorkspaceMachines = null;
-
-    if (this.importWorkspace && this.importWorkspace.length > 0) {
-      try {
-        this.importWorkspaceConfig = angular.fromJson(this.importWorkspace);
-        this.workspaceName = this.importWorkspaceConfig.name;
-        let environment = this.importWorkspaceConfig.environments[this.importWorkspaceConfig.defaultEnv];
-        let recipeType = environment.recipe.type;
-        let environmentManager = this.cheEnvironmentRegistry.getEnvironmentManager(recipeType);
-        this.importWorkspaceMachines = environmentManager.getMachines(environment);
-      } catch (error) {
-
-      }
-    }
-  }
-
-  /**
-   * Returns the list of environments to be displayed.
-   *
-   * @returns {*} list of environments
-   */
-  getEnvironments() {
-    if (this.selectSourceOption === 'select-source-import') {
-      return (this.importWorkspaceConfig && this.importWorkspaceConfig.environments) ? this.importWorkspaceConfig.environments : [];
-    } else if (this.stack) {
-      return this.stack.workspaceConfig.environments;
-    }
-    return [];
-  }
-
-  /**
-   * Detects machine source from pointed stack.
-   *
-   * @param stack to retrieve described source
-   * @returns {source} machine source config
-   */
-  getSourceFromStack(stack) {
-    let source = {};
-    source.type = 'dockerfile';
-
-    switch (stack.source.type.toLowerCase()) {
-      case 'image':
-        source.content = 'FROM ' + stack.source.origin;
-        break;
-      case 'dockerfile':
-        source.content = stack.source.origin;
-        break;
-      default:
-        throw 'Not implemented';
-    }
-
-    return source;
-  }
-
-  /**
-   * Submit a new workspace from current workspace name, source and workspace ram
-   *
-   * @param source machine source
-   */
-  submitWorkspace(source) {
-    let attributes = this.stack ? {stackId: this.stack.id} : {};
-    let stackWorkspaceConfig = this.stack ? this.stack.workspaceConfig : {};
-    this.setEnvironment(stackWorkspaceConfig);
-    let workspaceConfig = this.cheAPI.getWorkspace().formWorkspaceConfig(stackWorkspaceConfig, this.workspaceName, source, this.workspaceRam);
-
-    let creationPromise = this.cheAPI.getWorkspace().createWorkspaceFromConfig(null, workspaceConfig, attributes);
-    this.redirectAfterSubmitWorkspace(creationPromise);
-  }
-
-
-  /**
-   * Handle the redirect for the given promise after workspace has been created
-   * @param promise used to gather workspace data
-   */
-  redirectAfterSubmitWorkspace(promise) {
-    promise.then((workspaceData) => {
-      // update list of workspaces
-      // for new workspace to show in recent workspaces
-      this.updateRecentWorkspace(workspaceData.id);
-
-      let infoMessage = 'Workspace ' + workspaceData.config.name + ' successfully created.';
-      this.cheNotification.showInfo(infoMessage);
-      this.cheAPI.cheWorkspace.fetchWorkspaces().then(() => {
-        this.$location.path('/workspace/' + workspaceData.namespace + '/' +  workspaceData.config.name);
-      });
-    }, (error) => {
-      let errorMessage = error.data.message ? error.data.message : 'Error during workspace creation.';
+    const environmentName = this.stack.workspaceConfig.defaultEnv;
+    const environment = this.stack.workspaceConfig.environments[environmentName];
+    const recipeType = environment.recipe.type;
+    this.environmentManager = this.cheEnvironmentRegistry.getEnvironmentManager(recipeType);
+    if (!this.environmentManager) {
+      const errorMessage = `Unsupported recipe type '${recipeType}'`;
+      this.$log.error(errorMessage);
       this.cheNotification.showError(errorMessage);
+      return;
+    }
+    this.memoryByMachine = {};
+    this.stackMachines = this.environmentManager.getMachines(environment);
+  }
+
+  /**
+   * Callback which is called when machine's memory limit is changes.
+   *
+   * @param {string} name a machine name
+   * @param {number} memoryLimitBytes a machine's memory limit in bytes
+   */
+  onRamChanged(name: string, memoryLimitBytes: number): void {
+    this.memoryByMachine[name] = memoryLimitBytes;
+  }
+
+  /**
+   * Callback which is called when namespace is selected.
+   *
+   * @param {string} namespaceId a namespace ID
+   */
+  onNamespaceChanged(namespaceId: string) {
+    this.namespaceId = namespaceId;
+
+    this.buildListOfUsedNames().then(() => {
+      this.reValidateName();
     });
   }
 
   /**
-   * Emit event to move workspace immediately
-   * to top of the recent workspaces list
+   * Returns list of namespaces.
    *
-   * @param workspaceId
+   * @return {Array<che.INamespace>}
    */
-  updateRecentWorkspace(workspaceId) {
-    this.$rootScope.$broadcast('recent-workspace:set', workspaceId);
-  }
-
-  getMachines(environment) {
-    let recipeType = environment.recipe.type;
-    let environmentManager = this.cheEnvironmentRegistry.getEnvironmentManager(recipeType);
-
-    if (this.selectSourceOption === 'select-source-import') {
-      return this.importWorkspaceMachines;
-    }
-
-    if (!this.stackMachines[this.stack.id]) {
-      this.stackMachines[this.stack.id] = environmentManager.getMachines(environment);
-    }
-
-    return this.stackMachines[this.stack.id];
+  getNamespaces(): Array<che.INamespace> {
+    return this.namespaceSelectorSvc.getNamespaces();
   }
 
   /**
-   * Updates the workspace's environment with data entered by user.
+   * Returns namespaces empty message if set.
    *
-   * @param workspace workspace to update
+   * @returns {string}
    */
-  setEnvironment(workspace) {
-    if (!workspace.defaultEnv || !workspace.environments || workspace.environments.length === 0) {
-      return;
-    }
-
-    let environment = workspace.environments[workspace.defaultEnv];
-    if (!environment) {
-      return;
-    }
-
-    let recipeType = environment.recipe.type;
-    let environmentManager = this.cheEnvironmentRegistry.getEnvironmentManager(recipeType);
-    workspace.environments[workspace.defaultEnv] = environmentManager.getEnvironment(environment, this.getMachines(environment));
+  getNamespaceEmptyMessage(): string {
+    return this.namespaceSelectorSvc.getNamespaceEmptyMessage();
   }
+
+  /**
+   * Returns namespaces caption.
+   *
+   * @returns {string}
+   */
+  getNamespaceCaption(): string {
+    return this.namespaceSelectorSvc.getNamespaceCaption();
+  }
+
+  /**
+   * Returns <code>true</code> when 'Create' button should be disabled.
+   *
+   * @return {boolean}
+   */
+  isCreateButtonDisabled(): boolean {
+    if (!this.namespaceId || (this.stack && !this.stack.workspaceConfig)) {
+      return true;
+    }
+
+    for (const form of this.forms.values()) {
+      if (form.$valid !== true) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Stores forms in list.
+   *
+   * @param {string} inputName
+   * @param {ng.IFormController} form
+   */
+  registerForm(inputName: string, form: ng.IFormController) {
+    this.forms.set(inputName, form);
+  }
+
+  /**
+   * Returns <code>false</code> if workspace's name is not unique in the namespace.
+   * Only member with 'manageWorkspaces' permission can definitely know whether
+   * name is unique or not.
+   *
+   * @param {string} name workspace's name
+   */
+  isNameUnique(name: string): boolean {
+    return this.usedNamesList.indexOf(name) === -1;
+  }
+
+  /**
+   * Filters list of workspaces by current namespace and
+   * builds list of names for current namespace.
+   *
+   * @return {IPromise<any>}
+   */
+  buildListOfUsedNames(): ng.IPromise<any> {
+    return this.createWorkspaceSvc.fetchWorkspacesByNamespace(this.namespaceId).then((workspaces: Array<che.IWorkspace>) => {
+      this.usedNamesList = workspaces.filter((workspace: che.IWorkspace) => {
+        return workspace.namespace === this.namespaceId;
+      }).map((workspace: che.IWorkspace) => {
+        return workspace.config.name;
+      });
+    });
+  }
+
+  /**
+   * Triggers form validation on Settings tab.
+   */
+  reValidateName(): void {
+    const form: ng.IFormController = this.forms.get('name');
+
+    if (!form) {
+      return;
+    }
+
+    ['name', 'deskname'].forEach((inputName: string) => {
+      const model = form[inputName] as ng.INgModelController;
+      if (model) {
+        model.$validate();
+      }
+    });
+  }
+
+  /**
+   * Creates workspace.
+   *
+   * @returns {angular.IPromise<che.IWorkspace>}
+   */
+  createWorkspace(): ng.IPromise<che.IWorkspace> {
+    // update workspace name
+    this.stack.workspaceConfig.name = this.workspaceName;
+
+    // update memory limits of machines
+    if (Object.keys(this.memoryByMachine).length !== 0) {
+      this.stackMachines.forEach((machine: IEnvironmentManagerMachine) => {
+        if (this.memoryByMachine[machine.name]) {
+          this.environmentManager.setMemoryLimit(machine, this.memoryByMachine[machine.name]);
+        }
+      });
+      const environmentName = this.stack.workspaceConfig.defaultEnv;
+      const environment = this.stack.workspaceConfig.environments[environmentName];
+      const newEnvironment = this.environmentManager.getEnvironment(environment, this.stackMachines);
+      this.stack.workspaceConfig.environments[environmentName] = newEnvironment;
+    }
+    let attributes = {stackId: this.stack.id};
+    let workspaceConfig = angular.copy(this.stack.workspaceConfig);
+
+    return this.createWorkspaceSvc.createWorkspace(workspaceConfig, attributes);
+  }
+
+  /**
+   * Creates a workspace and shows a dialogue window for a user to select
+   * whether to open Workspace Details page or the IDE.
+   *
+   * @param {MouseEvent} $event
+   */
+  createWorkspaceAndShowDialog($event: MouseEvent): void {
+    this.createWorkspace().then((workspace: che.IWorkspace) => {
+      this.$mdDialog.show({
+        targetEvent: $event,
+        controller: 'AfterCreationDialogController',
+        controllerAs: 'afterCreationDialogController',
+        bindToController: true,
+        clickOutsideToClose: true,
+        templateUrl: 'app/workspaces/create-workspace/after-creation-dialog/after-creation-dialog.html'
+      }).then(() => {
+        // when promise is resolved then open workspace in IDE
+        this.createWorkspaceSvc.redirectToIDE(workspace);
+      }, () => {
+        // when promise is rejected then open Workspace Details page
+        this.createWorkspaceSvc.redirectToDetails(workspace);
+      });
+    });
+  }
+
 }

@@ -1,15 +1,26 @@
 /*
- * Copyright (c) 2015-2016 Codenvy, S.A.
+ * Copyright (c) 2015-2018 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ *   Red Hat, Inc. - initial API and implementation
  */
 'use strict';
 
+interface ICHEProjectResource<T> extends ng.resource.IResourceClass<T> {
+  import: any;
+  create: any;
+  batchCreate: any;
+  details: any;
+  estimate: any;
+  rename: any;
+  remove: any;
+  resolve: any;
+  update: any;
+}
 
 /**
  * This class is handling the projects retrieval
@@ -17,18 +28,20 @@
  * @author Florent Benoit
  */
 export class CheProject {
+  private $q: ng.IQService;
+  private $resource: ng.resource.IResourceService;
+  private resolveMap: Map <string, any>;
+  private estimateMap: Map <string, any>;
+  private projectDetailsMap: Map <string, any>;
+  private remoteProjectsAPI: ICHEProjectResource<any>;
+
 
   /**
    * Default constructor that is using resource
    */
-  constructor($resource, $q, cheWebsocket, wsagentPath) {
-
-    // keep resource
-    this.$resource = $resource;
-
-    this.cheWebsocket = cheWebsocket;
-
+  constructor($resource: ng.resource.IResourceService, $q: ng.IQService, wsagentPath: string, machineToken: string) {
     this.$q = $q;
+    this.$resource = $resource;
 
     // project details map with key projectPath
     this.projectDetailsMap = new Map();
@@ -40,25 +53,34 @@ export class CheProject {
     this.resolveMap = new Map();
 
     // remote call
-    this.remoteProjectsAPI = this.$resource(wsagentPath + '/project', {}, {
-      import: {method: 'POST', url: wsagentPath + '/project/import/:path'},
-      create: {method: 'POST', url: wsagentPath + '/project?name=:path'},
-      details: {method: 'GET', url: wsagentPath + '/project/:path'},
-      estimate: {method: 'GET', url: wsagentPath + '/project/estimate/:path?type=:type'},
-      rename: {method: 'POST', url: wsagentPath + '/project/rename/:path?name=:name'},
-      remove: {method: 'DELETE', url: wsagentPath + '/project/:path'},
-      resolve: {method: 'GET', url: wsagentPath + '/project/resolve/:path', isArray: true},
-      update: {method: 'PUT', url: wsagentPath + '/project/:path'}
+    this.remoteProjectsAPI = <ICHEProjectResource<any>>this.$resource(wsagentPath + '/project', {}, {
+      import: {method: 'POST', url: wsagentPath + '/project/import/:path', headers: this.getRequestHeaders(machineToken)},
+      create: {method: 'POST', url: wsagentPath + '/project?name=:path', headers: this.getRequestHeaders(machineToken)},
+      batchCreate: {method: 'POST', url: wsagentPath + '/project/batch', isArray: true, headers: this.getRequestHeaders(machineToken)},
+      details: {method: 'GET', url: wsagentPath + '/project/:path', headers: this.getRequestHeaders(machineToken)},
+      estimate: {method: 'GET', url: wsagentPath + '/project/estimate/:path?type=:type', headers: this.getRequestHeaders(machineToken)},
+      rename: {method: 'POST', url: wsagentPath + '/project/rename/:path?name=:name', headers: this.getRequestHeaders(machineToken)},
+      remove: {method: 'DELETE', url: wsagentPath + '/project/:path', headers: this.getRequestHeaders(machineToken)},
+      resolve: {method: 'GET', url: wsagentPath + '/project/resolve/:path', isArray: true, headers: this.getRequestHeaders(machineToken)},
+      update: {method: 'PUT', url: wsagentPath + '/project/:path', headers: this.getRequestHeaders(machineToken)}
     });
+  }
+
+  getRequestHeaders(machineToken: string): any {
+    if (!machineToken) {
+      return;
+    }
+
+    return {'Authorization': machineToken};
   }
 
   /**
    * Import a project based located on the given path
-   * @param path the path of the project
-   * @param data the project body description
-   * @returns {$promise|*|T.$promise}
+   * @param path the path{string} of the project
+   * @param data the project{any} body description
+   * @returns {ng.IPromise<any>}
    */
-  importProject(path, data) {
+  importProject(path: string, data: any): ng.IPromise<any> {
     // remove unused description because we cannot set project description without project type
     if ((!data.type || data.type.length === 0) && data.description) {
       delete(data.description);
@@ -70,26 +92,36 @@ export class CheProject {
 
   /**
    * Create a project based located on the given path
-   * @param path the path of the project
-   * @param data the project body description
-   * @returns {$promise|*|T.$promise}
+   * @param path{string} the path of the project
+   * @param data{che.IProject} the project body description
+   * @returns {ng.IPromise<any>}
    */
-  createProject(path, data) {
+  createProject(path: string, data: che.IProject): ng.IPromise<any> {
     let promise = this.remoteProjectsAPI.create({path: path}, data).$promise;
     return promise;
   }
 
   /**
+   * Create a batch of projects.
+   * @param projects{Array<che.IProjectTemplate>} the list of projects to be created
+   * @returns {ng.IPromise<any>}
+   */
+  createProjects(projects: Array<che.IProjectTemplate>): ng.IPromise<any> {
+    let promise = this.remoteProjectsAPI.batchCreate(projects).$promise;
+    return promise;
+  }
+
+  /**
    * Gets the fullname from a profile
-   * @param profile the profile to analyze
+   * @param profile{che.IProfile} the profile to analyze
    * @returns {string} a name
    */
-  getFullName(profile) {
-    var firstName = profile.attributes.firstName;
+  getFullName(profile: che.IProfile): string {
+    let firstName = profile.attributes.firstName;
     if (!firstName) {
       firstName = '';
     }
-    var lastName = profile.attributes.lastName;
+    let lastName = profile.attributes.lastName;
     if (!lastName) {
       lastName = '';
     }
@@ -100,14 +132,15 @@ export class CheProject {
   /**
    * Fetch project details on the given path
    * @param projectPath the path of the project
+   * @returns {ng.IPromise<any>}
    */
-  fetchProjectDetails(workspaceId, projectPath) {
-    //TODO why we cannot use project path
-    var projectName = projectPath[0] === '/' ? projectPath.slice(1) : projectPath;
+  fetchProjectDetails(workspaceId: string, projectPath: string): ng.IPromise<any> {
+    // todo why we cannot use project path
+    let projectName = projectPath[0] === '/' ? projectPath.slice(1) : projectPath;
     let promise = this.remoteProjectsAPI.details({path: projectName}).$promise;
 
     // check if it was OK or not
-    let parsedResultPromise = promise.then((projectDetails) => {
+    let parsedResultPromise = promise.then((projectDetails: any) => {
       if (projectDetails) {
         projectDetails.workspaceId = workspaceId;
         this.projectDetailsMap.set(projectPath, projectDetails);
@@ -117,21 +150,21 @@ export class CheProject {
     return parsedResultPromise;
   }
 
-  getProjectDetailsByKey(projectPath) {
+  getProjectDetailsByKey(projectPath: string): any {
     return this.projectDetailsMap.get(projectPath);
   }
 
-  removeProjectDetailsByKey(projectPath) {
+  removeProjectDetailsByKey(projectPath: string): void {
     this.projectDetailsMap.delete(projectPath);
   }
 
-  updateProjectDetails(projectDetails) {
+  updateProjectDetails(projectDetails: any): ng.IPromise<any> {
     return this.updateProject(projectDetails.name, projectDetails);
   }
 
-  updateProject(path, projectDetails) {
+  updateProject(path: string, projectDetails: any): ng.IPromise<any> {
     let newProjectDetails = angular.copy(projectDetails);
-    if(newProjectDetails.workspaceId){
+    if (newProjectDetails.workspaceId) {
       delete(newProjectDetails.workspaceId);
     }
     let promiseUpdateProjectDetails = this.remoteProjectsAPI.update({
@@ -141,37 +174,37 @@ export class CheProject {
     return promiseUpdateProjectDetails;
   }
 
-  rename(projectName, newProjectName) {
+  rename(projectName: string, newProjectName: string): ng.IPromise<any> {
     let promise = this.remoteProjectsAPI.rename({path: projectName, name: newProjectName}, null).$promise;
     return promise;
   }
 
-  remove(projectName) {
+  remove(projectName: string): ng.IPromise<any> {
     let promiseDelete = this.remoteProjectsAPI.remove({path: projectName}).$promise;
     return promiseDelete;
   }
 
   /**
    * Fetch estimate and return promise for this estimate
-   * @param projectPath the path to the project in the workspace
-   * @param projectType the project type in the list of available types
-   * @returns {Promise}
+   * @param projectPath{string} the path to the project in the workspace
+   * @param projectType{string} the project type in the list of available types
+   * @returns {ng.IPromise<any>}
    */
-  fetchEstimate(projectPath, projectType) {
-      let projectName = projectPath[0] === '/' ? projectPath.slice(1) : projectPath;
-      let promise = this.remoteProjectsAPI.estimate({path: projectName, type: projectType}).$promise;
-      let parsedResultPromise = promise.then((estimate) => {
-        if (estimate) {
-          this.estimateMap.set(projectName + projectType, estimate);
-        }
-      });
+  fetchEstimate(projectPath: string, projectType: string): ng.IPromise<any> {
+    let projectName = projectPath[0] === '/' ? projectPath.slice(1) : projectPath;
+    let promise = this.remoteProjectsAPI.estimate({path: projectName, type: projectType}).$promise;
+    let parsedResultPromise = promise.then((estimate: any) => {
+      if (estimate) {
+        this.estimateMap.set(projectName + projectType, estimate);
+      }
+    });
     return parsedResultPromise;
   }
 
   /**
    * @return the estimation based on the given 2 inputs : project path and project type
    */
-  getEstimate(projectPath, projectType) {
+  getEstimate(projectPath: string, projectType: string): any {
     let projectName = projectPath[0] === '/' ? projectPath.slice(1) : projectPath;
     return this.estimateMap.get(projectName + projectType);
   }
@@ -180,12 +213,12 @@ export class CheProject {
   /**
    * Fetch resolve and return promise for this resolution
    * @param projectPath the path to the project in the workspace
-   * @returns {Promise}
+   * @returns {ng.IPromise<any>}
    */
-  fetchResolve(projectPath) {
+  fetchResolve(projectPath: string): ng.IPromise<any> {
     let projectName = projectPath[0] === '/' ? projectPath.slice(1) : projectPath;
     let promise = this.remoteProjectsAPI.resolve({path: projectName}).$promise;
-    let parsedResultPromise = promise.then((resolve) => {
+    let parsedResultPromise = promise.then((resolve: any) => {
       if (resolve) {
         this.resolveMap.set(projectName, resolve);
       }
@@ -196,7 +229,7 @@ export class CheProject {
   /**
    * @return the estimation based on the given input : project path
    */
-  getResolve(projectPath) {
+  getResolve(projectPath: string): any {
     let projectName = projectPath[0] === '/' ? projectPath.slice(1) : projectPath;
     return this.resolveMap.get(projectName);
   }

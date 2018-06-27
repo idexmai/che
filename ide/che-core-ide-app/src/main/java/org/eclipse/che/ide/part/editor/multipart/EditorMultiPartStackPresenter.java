@@ -1,33 +1,39 @@
-/*******************************************************************************
- * Copyright (c) 2012-2016 Codenvy, S.A.
+/*
+ * Copyright (c) 2012-2018 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
- *******************************************************************************/
+ *   Red Hat, Inc. - initial API and implementation
+ */
 package org.eclipse.che.ide.part.editor.multipart;
 
 import com.google.gwt.user.client.ui.AcceptsOneWidget;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.web.bindery.event.shared.EventBus;
-
+import java.util.LinkedList;
+import java.util.List;
+import javax.validation.constraints.NotNull;
+import org.eclipse.che.api.core.model.workspace.WorkspaceStatus;
 import org.eclipse.che.commons.annotation.Nullable;
+import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.constraints.Constraints;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
-import org.eclipse.che.ide.api.event.ActivePartChangedEvent;
-import org.eclipse.che.ide.api.event.ActivePartChangedHandler;
+import org.eclipse.che.ide.api.parts.ActivePartChangedEvent;
+import org.eclipse.che.ide.api.parts.ActivePartChangedHandler;
 import org.eclipse.che.ide.api.parts.EditorMultiPartStack;
+import org.eclipse.che.ide.api.parts.EditorMultiPartStackState;
 import org.eclipse.che.ide.api.parts.EditorPartStack;
 import org.eclipse.che.ide.api.parts.EditorTab;
 import org.eclipse.che.ide.api.parts.PartPresenter;
-import org.eclipse.che.ide.part.editor.EditorPartStackFactory;
-
-import javax.validation.constraints.NotNull;
-import java.util.LinkedList;
+import org.eclipse.che.ide.api.workspace.event.WorkspaceRunningEvent;
+import org.eclipse.che.ide.api.workspace.event.WorkspaceStartingEvent;
+import org.eclipse.che.ide.api.workspace.event.WorkspaceStoppedEvent;
+import org.eclipse.che.ide.api.workspace.event.WorkspaceStoppingEvent;
 
 /**
  * Presenter to control the displaying of multi editors.
@@ -35,227 +41,308 @@ import java.util.LinkedList;
  * @author Roman Nikitenko
  */
 @Singleton
-public class EditorMultiPartStackPresenter implements EditorMultiPartStack, ActivePartChangedHandler {
-    private PartPresenter activeEditor;
+public class EditorMultiPartStackPresenter
+    implements EditorMultiPartStack, ActivePartChangedHandler {
+  private final Provider<EditorPartStack> editorPartStackFactory;
+  private final EditorMultiPartStackView view;
+  private final LinkedList<EditorPartStack> partStackPresenters;
+  private PartPresenter activeEditor;
+  private EditorPartStack activeEditorPartStack;
 
-    private final EditorPartStackFactory      editorPartStackFactory;
-    private final EditorMultiPartStackView    view;
-    private final LinkedList<EditorPartStack> partStackPresenters;
+  private State state = State.NORMAL;
 
-    @Inject
-    public EditorMultiPartStackPresenter(EventBus eventBus,
-                                         EditorMultiPartStackView view,
-                                         EditorPartStackFactory editorPartStackFactory) {
-        this.view = view;
-        this.editorPartStackFactory = editorPartStackFactory;
-        this.partStackPresenters = new LinkedList<>();
+  @Inject
+  public EditorMultiPartStackPresenter(
+      EventBus eventBus,
+      EditorMultiPartStackView view,
+      Provider<EditorPartStack> editorPartStackFactory,
+      AppContext appContext) {
+    this.view = view;
+    this.editorPartStackFactory = editorPartStackFactory;
+    this.partStackPresenters = new LinkedList<>();
 
-        eventBus.addHandler(ActivePartChangedEvent.TYPE, this);
+    eventBus.addHandler(ActivePartChangedEvent.TYPE, this);
+
+    eventBus.addHandler(WorkspaceStoppingEvent.TYPE, event -> view.showPlaceholder(true));
+    eventBus.addHandler(WorkspaceStoppedEvent.TYPE, event -> view.showPlaceholder(true));
+    eventBus.addHandler(WorkspaceStartingEvent.TYPE, event -> view.showPlaceholder(true));
+    eventBus.addHandler(WorkspaceRunningEvent.TYPE, event -> view.showPlaceholder(false));
+
+    if (WorkspaceStatus.RUNNING != appContext.getWorkspace().getStatus()) {
+      view.showPlaceholder(true);
+    }
+  }
+
+  @Override
+  public void setDelegate(ActionDelegate delegate) {}
+
+  @Override
+  public void go(AcceptsOneWidget container) {
+    container.setWidget(view);
+  }
+
+  @Override
+  public boolean containsPart(PartPresenter part) {
+    for (EditorPartStack partStackPresenter : partStackPresenters) {
+      if (partStackPresenter.containsPart(part)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void addPart(@NotNull PartPresenter part) {
+    if (activeEditorPartStack != null) {
+      // open the part in the active editorPartStack
+      activeEditorPartStack.addPart(part);
+      return;
     }
 
+    // open the part in the new editorPartStack
+    addEditorPartStack(part, null, null, -1);
+  }
 
-    @Override
-    public void go(AcceptsOneWidget container) {
-        container.setWidget(view);
+  /** {@inheritDoc} */
+  @Override
+  public void addPart(@NotNull PartPresenter part, Constraints constraint) {
+    if (constraint == null) {
+      addPart(part);
+      return;
     }
 
-    @Override
-    public boolean containsPart(PartPresenter part) {
-        for (EditorPartStack partStackPresenter : partStackPresenters) {
-            if (partStackPresenter.containsPart(part)) {
-                return true;
-            }
-        }
-        return false;
+    EditorPartStack relativePartStack = getPartStackByTabId(constraint.relativeId);
+    if (relativePartStack != null) {
+      // view of relativePartStack will be split corresponding to constraint on two areas and part
+      // will be added into created area
+      addEditorPartStack(part, relativePartStack, constraint, -1);
+    }
+  }
+
+  private EditorPartStack addEditorPartStack(
+      final PartPresenter part,
+      final EditorPartStack relativePartStack,
+      final Constraints constraints,
+      double size) {
+    final EditorPartStack editorPartStack = editorPartStackFactory.get();
+    partStackPresenters.add(editorPartStack);
+
+    view.addPartStack(editorPartStack, relativePartStack, constraints, size);
+
+    if (part != null) {
+      editorPartStack.addPart(part);
+    }
+    return editorPartStack;
+  }
+
+  @Override
+  public void setFocus(boolean focused) {
+    if (activeEditorPartStack != null) {
+      activeEditorPartStack.setFocus(focused);
+    }
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public PartPresenter getActivePart() {
+    return activeEditor;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void setActivePart(@NotNull PartPresenter part) {
+    activeEditor = part;
+    EditorPartStack editorPartStack = getPartStackByPart(part);
+    if (editorPartStack != null) {
+      activeEditorPartStack = editorPartStack;
+      editorPartStack.setActivePart(part);
+    }
+  }
+
+  @Override
+  public void show() {
+    state = State.NORMAL;
+  }
+
+  @Override
+  public void hide() {
+    state = State.HIDDEN;
+  }
+
+  @Override
+  public void maximize() {
+    state = State.MAXIMIZED;
+  }
+
+  @Override
+  public void minimize() {
+    state = State.MINIMIZED;
+  }
+
+  @Override
+  public void restore() {
+    state = State.NORMAL;
+  }
+
+  @Override
+  public State getPartStackState() {
+    return state;
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public void removePart(PartPresenter part) {
+    EditorPartStack editorPartStack = getPartStackByPart(part);
+    if (editorPartStack == null) {
+      return;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void addPart(@NotNull PartPresenter part) {
-        EditorPartStack editorPartStack = getPartStackByPart(activeEditor);
-        if (editorPartStack != null) {
-            //open the part in the same editorPartStack as the activeEditor
-            editorPartStack.addPart(part);
-            return;
-        }
+    editorPartStack.removePart(part);
 
-        //open the part in the new editorPartStack
-        addEditorPartStack(part, null, null);
+    if (editorPartStack.getActivePart() == null) {
+      removePartStack(editorPartStack);
+    }
+  }
+
+  @Override
+  public void removePartStack(EditorPartStack editorPartStack) {
+    if (activeEditorPartStack == editorPartStack) {
+      activeEditorPartStack = null;
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void addPart(@NotNull PartPresenter part, Constraints constraint) {
-        if (constraint == null) {
-            addPart(part);
-            return;
-        }
+    editorPartStack.getParts().forEach(editorPartStack::removePart);
 
-        EditorPartStack relativePartStack = getPartStackByTabId(constraint.relativeId);
-        if (relativePartStack != null) {
-            //view of relativePartStack will be split corresponding to constraint on two areas and part will be added into created area
-            addEditorPartStack(part, relativePartStack, constraint);
-        }
+    view.removePartStack(editorPartStack);
+    partStackPresenters.remove(editorPartStack);
+
+    if (!partStackPresenters.isEmpty()) {
+      EditorPartStack lastStackPresenter = partStackPresenters.getLast();
+      lastStackPresenter.openPreviousActivePart();
+    }
+  }
+
+  @Override
+  public void openPreviousActivePart() {
+    if (activeEditor != null) {
+      EditorPartStack partStack = getPartStackByPart(activeEditor);
+      if (partStack != null) {
+        partStack.openPreviousActivePart();
+      }
+    }
+  }
+
+  @Override
+  public void updateStack() {
+    for (EditorPartStack editorPartStack : partStackPresenters) {
+      editorPartStack.updateStack();
+    }
+  }
+
+  @Override
+  public EditorPartStack getActivePartStack() {
+    return activeEditorPartStack;
+  }
+
+  @Override
+  public List<EditorPartPresenter> getParts() {
+    throw new UnsupportedOperationException();
+  }
+
+  @Nullable
+  public EditorPartStack getPartStackByPart(PartPresenter part) {
+    if (part == null) {
+      return null;
     }
 
-    private void addEditorPartStack(final PartPresenter part, final EditorPartStack relativePartStack, final Constraints constraints) {
-        final EditorPartStack editorPartStack = editorPartStackFactory.create();
-        partStackPresenters.add(editorPartStack);
-
-        view.addPartStack(editorPartStack, relativePartStack, constraints);
-        editorPartStack.addPart(part);
+    for (EditorPartStack editorPartStack : partStackPresenters) {
+      if (editorPartStack.containsPart(part)) {
+        return editorPartStack;
+      }
     }
+    return null;
+  }
 
-    @Override
-    public void setFocus(boolean focused) {
-        EditorPartStack editorPartStack = getPartStackByPart(activeEditor);
-        if (editorPartStack != null) {
-            editorPartStack.setFocus(focused);
-        }
+  @Nullable
+  public EditorPartStack getPartStackByTabId(@NotNull String tabId) {
+    for (EditorPartStack editorPartStack : partStackPresenters) {
+      PartPresenter editorPart = editorPartStack.getPartByTabId(tabId);
+      if (editorPart != null) {
+        return editorPartStack;
+      }
     }
+    return null;
+  }
 
-    /** {@inheritDoc} */
-    @Override
-    public PartPresenter getActivePart() {
-        return activeEditor;
+  @Override
+  public EditorPartPresenter getPartByTabId(@NotNull String tabId) {
+    for (EditorPartStack editorPartStack : partStackPresenters) {
+      EditorPartPresenter editorPart = editorPartStack.getPartByTabId(tabId);
+      if (editorPart != null) {
+        return editorPart;
+      }
     }
+    return null;
+  }
 
-    /** {@inheritDoc} */
-    @Override
-    public void setActivePart(@NotNull PartPresenter part) {
-        activeEditor = part;
-        EditorPartStack editorPartStack = getPartStackByPart(part);
-        if (editorPartStack != null) {
-            editorPartStack.setActivePart(part);
-        }
+  @Override
+  public EditorTab getTabByPart(EditorPartPresenter editorPart) {
+    for (EditorPartStack editorPartStack : partStackPresenters) {
+      EditorTab editorTab = editorPartStack.getTabByPart(editorPart);
+      if (editorTab != null) {
+        return editorTab;
+      }
     }
+    return null;
+  }
 
-    @Override
-    public void hidePart(PartPresenter part) {
-        EditorPartStack editorPartStack = getPartStackByPart(part);
-        if (editorPartStack != null) {
-            editorPartStack.hidePart(part);
-        }
+  @Override
+  public EditorPartPresenter getNextFor(EditorPartPresenter editorPart) {
+    for (EditorPartStack editorPartStack : partStackPresenters) {
+      if (editorPartStack.containsPart(editorPart)) {
+        return editorPartStack.getNextFor(editorPart);
+      }
     }
+    return null;
+  }
 
-    /** {@inheritDoc} */
-    @Override
-    public void removePart(PartPresenter part) {
-        EditorPartStack editorPartStack = getPartStackByPart(part);
-        if (editorPartStack == null) {
-            return;
-        }
-
-        editorPartStack.removePart(part);
-
-        if (editorPartStack.getActivePart() != null) {
-            return;
-        }
-
-        view.removePartStack(editorPartStack);
-        partStackPresenters.remove(editorPartStack);
-
-        if (!partStackPresenters.isEmpty()) {
-            EditorPartStack lastStackPresenter = partStackPresenters.getLast();
-            lastStackPresenter.openPreviousActivePart();
-        }
+  @Override
+  public EditorPartPresenter getPreviousFor(EditorPartPresenter editorPart) {
+    for (EditorPartStack editorPartStack : partStackPresenters) {
+      if (editorPartStack.containsPart(editorPart)) {
+        return editorPartStack.getPreviousFor(editorPart);
+      }
     }
+    return null;
+  }
 
-    @Override
-    public void openPreviousActivePart() {
-        if (activeEditor != null) {
-            getPartStackByPart(activeEditor).openPreviousActivePart();
-        }
+  @Override
+  public EditorPartStack createRootPartStack() {
+    EditorPartStack editorPartStack = addEditorPartStack(null, null, null, -1);
+    activeEditorPartStack = editorPartStack;
+    return editorPartStack;
+  }
+
+  @Override
+  public EditorPartStack split(
+      EditorPartStack relativePartStack, Constraints constraints, double size) {
+    EditorPartStack editorPartStack =
+        addEditorPartStack(null, relativePartStack, constraints, size);
+    activeEditorPartStack = editorPartStack;
+    return editorPartStack;
+  }
+
+  @Override
+  public EditorMultiPartStackState getState() {
+    return view.getState();
+  }
+
+  @Override
+  public void onActivePartChanged(ActivePartChangedEvent event) {
+    PartPresenter activePart = event.getActivePart();
+    if (activePart instanceof EditorPartPresenter) {
+      activeEditor = activePart;
+      activeEditorPartStack = getPartStackByPart(activePart);
     }
-
-    @Override
-    public void updateStack() {
-        for (EditorPartStack editorPartStack : partStackPresenters) {
-            editorPartStack.updateStack();
-        }
-    }
-
-    @Nullable
-    public EditorPartStack getPartStackByPart(PartPresenter part) {
-        if (part == null) {
-            return null;
-        }
-
-        for (EditorPartStack editorPartStack : partStackPresenters) {
-            if (editorPartStack.containsPart(part)) {
-                return editorPartStack;
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    private EditorPartStack getPartStackByTabId(@NotNull String tabId) {
-        for (EditorPartStack editorPartStack : partStackPresenters) {
-            PartPresenter editorPart = editorPartStack.getPartByTabId(tabId);
-            if (editorPart != null) {
-                return editorPartStack;
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public EditorPartPresenter getPartByTabId(@NotNull String tabId) {
-        for (EditorPartStack editorPartStack : partStackPresenters) {
-            EditorPartPresenter editorPart = editorPartStack.getPartByTabId(tabId);
-            if (editorPart != null) {
-                return editorPart;
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public EditorTab getTabByPart(EditorPartPresenter editorPart) {
-        for (EditorPartStack editorPartStack : partStackPresenters) {
-            EditorTab editorTab = editorPartStack.getTabByPart(editorPart);
-            if (editorTab != null) {
-                return editorTab;
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public EditorPartPresenter getNextFor(EditorPartPresenter editorPart) {
-        for (EditorPartStack editorPartStack : partStackPresenters) {
-            if (editorPartStack.containsPart(editorPart)) {
-                return editorPartStack.getNextFor(editorPart);
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public EditorPartPresenter getPreviousFor(EditorPartPresenter editorPart) {
-        for (EditorPartStack editorPartStack : partStackPresenters) {
-            if (editorPartStack.containsPart(editorPart)) {
-                return editorPartStack.getPreviousFor(editorPart);
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public EditorPartPresenter getLastClosedBasedOn(EditorPartPresenter editorPart) {
-        for (EditorPartStack editorPartStack : partStackPresenters) {
-            if (editorPartStack.containsPart(editorPart)) {
-                return editorPartStack.getLastClosed();
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public void onActivePartChanged(ActivePartChangedEvent event) {
-        if (event.getActivePart() instanceof EditorPartPresenter) {
-            activeEditor = event.getActivePart();
-        }
-    }
+  }
 }

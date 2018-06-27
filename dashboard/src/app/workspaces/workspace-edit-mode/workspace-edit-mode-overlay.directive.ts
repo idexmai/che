@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2015-2016 Codenvy, S.A.
+ * Copyright (c) 2015-2018 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ *   Red Hat, Inc. - initial API and implementation
  */
 'use strict';
 
@@ -34,23 +34,27 @@
  *
  * @author Oleksii Kurinnyi
  */
-export class WorkspaceEditModeOverlay {
-  restrict = 'E';
+export class WorkspaceEditModeOverlay implements ng.IDirective {
+  replace: boolean = true;
+  transclude: boolean = true;
+  restrict: string = 'E';
+  templateUrl: string = 'app/workspaces/workspace-edit-mode/workspace-edit-mode-overlay.html';
 
-  replace = true;
-  templateUrl = 'app/workspaces/workspace-edit-mode/workspace-edit-mode-overlay.html';
-
-  scope = {
-    message: '@?workspaceEditModeMessage',
-    showMessage: '=?workspaceEditModeShowMessage',
-    onSave: '&workspaceEditModeOnSave',
-    onCancel: '&workspaceEditModeOnCancel'
+  scope: {
+    [propName: string]: string
   };
 
   /**
    * Default constructor that is using resource
-   * @ngInject for Dependency injection
    */
-  constructor () { }
+  constructor () {
+    this.scope = {
+      message: '@?workspaceEditModeMessage',
+      showMessage: '=?workspaceEditModeShowMessage',
+      onSave: '&workspaceEditModeOnSave',
+      onCancel: '&workspaceEditModeOnCancel',
+      disableSaveButton: '=workspaceEditDisableSaveButton'
+    };
+  }
 
 }

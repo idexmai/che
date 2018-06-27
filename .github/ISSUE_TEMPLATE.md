@@ -1,25 +1,16 @@
-[Short description of problem here]
+### Description
+<!--- 
+Replace this comment with a description of the problem.
 
-**Reproduction Steps:**
+Please help us by providing all of the details listed below. A complete and thoughtful issue request with research on possible root causes and diagnostics goes a very long way in helping us rapidly get your issues resolved.
 
-1. [First Step]
-2. [Second Step]
-3. [Other Steps...]
+COMMITTERS: please include labels on each issue. Labels are listed here: https://github.com/eclipse/che/wiki/Labels but at a minimum you should include `kind` and `status` labels.
+--> 
 
-**Expected behavior:**
+### Reproduction Steps
+<!-- Describe the issue in as much detail as possible including steps to reproduce. Screenshots are very helpful. -->
 
-[Describe expected behavior here]
+**OS and version:**    
 
-**Observed behavior:**
-
-[Describe observed behavior here]
-
-**Che version:**    [Enter Che version here]   
-**OS and version:** [Enter OS name and version here]   
-**Docker version:** [Enter your Docker version here `docker version` on CLI]   
-**Che install:**    [Vagrant, Docker container, server (zip), Bitnami, Yatta, or Codenvy?]   
-
-**Additional information:**
-
-* Problem started happening recently, didn't happen in an older version of Che: [Yes/No]
-* Problem can be reliably reproduced, doesn't happen randomly: [Yes/No]
+**Diagnostics:** 
+<!-- Provide logs and any other relevant diagnostic information -->

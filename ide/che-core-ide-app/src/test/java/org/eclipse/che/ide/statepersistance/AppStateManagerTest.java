@@ -1,150 +1,168 @@
-/*******************************************************************************
- * Copyright (c) 2012-2016 Codenvy, S.A.
+/*
+ * Copyright (c) 2012-2018 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
- *******************************************************************************/
+ *   Red Hat, Inc. - initial API and implementation
+ */
 package org.eclipse.che.ide.statepersistance;
+
+import static org.fest.assertions.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.google.gwtmockito.GwtMockitoTestRunner;
 import com.google.inject.Provider;
-import com.google.web.bindery.event.shared.EventBus;
-
+import elemental.json.Json;
+import elemental.json.JsonFactory;
+import elemental.json.JsonObject;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.Promise;
-import org.eclipse.che.api.workspace.shared.dto.WorkspaceDto;
-import org.eclipse.che.ide.api.action.Action;
-import org.eclipse.che.ide.api.action.ActionEvent;
-import org.eclipse.che.ide.api.action.ActionManager;
-import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.api.promises.client.PromiseProvider;
 import org.eclipse.che.ide.api.parts.PerspectiveManager;
-import org.eclipse.che.ide.api.preferences.PreferencesManager;
-import org.eclipse.che.ide.dto.DtoFactory;
-import org.eclipse.che.ide.statepersistance.dto.ActionDescriptor;
-import org.eclipse.che.ide.statepersistance.dto.AppState;
-import org.eclipse.che.ide.statepersistance.dto.WorkspaceState;
-import org.eclipse.che.ide.ui.toolbar.PresentationFactory;
-import org.eclipse.che.ide.util.Pair;
+import org.eclipse.che.ide.api.statepersistance.AppStateServiceClient;
+import org.eclipse.che.ide.api.statepersistance.StateComponent;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Matchers;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import static org.eclipse.che.ide.statepersistance.AppStateManager.PREFERENCE_PROPERTY_NAME;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * Test covers {@link AppStateManager} functionality.
  *
  * @author Artem Zatsarynnyi
  * @author Dmitry Shnurenko
+ * @author Vlad Zhukovskyi
  */
 @RunWith(GwtMockitoTestRunner.class)
 public class AppStateManagerTest {
 
-    private static final String JSON      = "json";
-    private static final String WS_ID     = "ws_id";
-    private static final String ACTION_ID = "action_id";
+  private static final String COMPONENT_ONE_ID = "component1";
+  private static final String COMPONENT_TWO_ID = "component2";
 
-    @Mock
-    private PreferencesManager           preferencesManager;
-    @Mock
-    private AppContext                   appContext;
-    @Mock
-    private DtoFactory                   dtoFactory;
-    @Mock
-    private ActionManager                actionManager;
-    @Mock
-    private PresentationFactory          presentationFactory;
-    @Mock
-    private Provider<PerspectiveManager> perspectiveManagerProvider;
-    @Mock
-    private EventBus                     eventBus;
+  @Mock private StateComponentRegistry stateComponentRegistry;
+  @Mock private Provider<StateComponentRegistry> stateComponentRegistryProvider;
+  @Mock private Provider<PerspectiveManager> perspectiveManagerProvider;
+  @Mock private StateComponent component1;
+  @Mock private StateComponent component2;
+  @Mock private Provider<StateComponent> component1Provider;
+  @Mock private Provider<StateComponent> component2Provider;
+  @Mock private Promise<Void> promise;
+  @Mock private Promise<String> getStatePromise;
+  @Mock private JsonFactory jsonFactory;
+  @Mock private AppStateServiceClient appStateService;
+  @Mock private PromiseProvider promiseProvider;
 
-    //additional mocks
-    @Mock
-    private AppState             appState;
-    @Mock
-    private WorkspaceState       workspaceState;
-    @Mock
-    private Promise<Void>        voidPromise;
-    @Mock
-    private PersistenceComponent persistenceComponent;
+  @Mock private Promise<Void> sequentialRestore;
 
-    private AppStateManager appStateManager;
+  @Captor private ArgumentCaptor<Function<Void, Promise<Void>>> sequentialRestoreThenFunction;
 
-    @Before
-    public void setUp() {
-        WorkspaceDto usersWorkspaceDto = mock(WorkspaceDto.class);
-        when(usersWorkspaceDto.getId()).thenReturn(WS_ID);
-        when(preferencesManager.getValue(PREFERENCE_PROPERTY_NAME)).thenReturn(JSON);
-        when(dtoFactory.createDtoFromJson(JSON, AppState.class)).thenReturn(appState);
+  @Captor private ArgumentCaptor<String> saveStateArgumentCaptor;
 
-        Map<String, WorkspaceState> workspaceStates = new HashMap<>();
-        workspaceStates.put(WS_ID, workspaceState);
+  private AppStateManager appStateManager;
 
-        when(appState.getWorkspaces()).thenReturn(workspaceStates);
+  @Before
+  public void setUp() {
+    when(appStateService.loadState()).thenReturn(getStatePromise);
+    when(getStatePromise.thenPromise((Function<String, Promise<Void>>) any())).thenReturn(promise);
 
-        Set<PersistenceComponent> persistenceComponents = new HashSet<>(Collections.singletonList(persistenceComponent));
+    List<StateComponent> components = new ArrayList<>();
+    components.add(component1);
+    components.add(component2);
 
-        appStateManager = new AppStateManager(persistenceComponents,
-                                              preferencesManager,
-                                              dtoFactory,
-                                              actionManager,
-                                              presentationFactory,
-                                              perspectiveManagerProvider);
-    }
+    when(stateComponentRegistry.getComponents()).thenReturn(components);
+    when(stateComponentRegistry.getComponentById(anyString())).thenReturn(Optional.of(component1));
+    when(stateComponentRegistryProvider.get()).thenReturn(stateComponentRegistry);
 
-    @Test
-    public void shouldReadStateFromPreferences() {
-        verify(preferencesManager).getValue(PREFERENCE_PROPERTY_NAME);
-        verify(dtoFactory).createDtoFromJson(JSON, AppState.class);
-    }
+    when(component1Provider.get()).thenReturn(component1);
+    when(component2Provider.get()).thenReturn(component2);
 
-    @Test
-    public void shouldRestoreWorkspaceState() {
-        ActionDescriptor actionDescriptor = mock(ActionDescriptor.class);
-        when(actionDescriptor.getId()).thenReturn(ACTION_ID);
-        when(workspaceState.getActions()).thenReturn(Collections.singletonList(actionDescriptor));
-        Action action = mock(Action.class);
-        when(actionManager.getAction(eq(ACTION_ID))).thenReturn(action);
-        when(actionManager.performActions(Matchers.<List<Pair<Action, ActionEvent>>>anyObject(), eq(false))).thenReturn(voidPromise);
+    when(component1.getId()).thenReturn(COMPONENT_ONE_ID);
+    when(component2.getId()).thenReturn(COMPONENT_TWO_ID);
+    when(jsonFactory.parse(anyString())).thenReturn(Json.createObject());
+    appStateManager =
+        new AppStateManager(
+            perspectiveManagerProvider,
+            stateComponentRegistryProvider,
+            jsonFactory,
+            promiseProvider,
+            appStateService);
+    appStateManager.readState();
+  }
 
-//        verify(appState).getWorkspaces();
-//        verify(workspaceState).getActions();
-//        verify(actionManager).getAction(ACTION_ID);
-//        verify(presentationFactory).getPresentation(action);
-//        verify(perspectiveManagerProvider).get();
-//        verify(actionManager).performActions(Matchers.<List<Pair<Action, ActionEvent>>>anyObject(), eq(false));
-    }
+  @Test
+  public void shouldStoreState() throws Exception {
+    appStateManager.persistState();
 
-    @Test
-    public void shouldNotRestoreWorkspaceStateWhenNoSavedStates() {
-        when(appState.getWorkspaces()).thenReturn(new HashMap<String, WorkspaceState>());
+    verify(appStateService).saveState(saveStateArgumentCaptor.capture());
+    assertThat(saveStateArgumentCaptor.getValue()).isNotNull();
+  }
 
-        verify(actionManager, never()).performActions(Matchers.<List<Pair<Action, ActionEvent>>>anyObject(), anyBoolean());
-    }
+  @Test
+  public void shouldCallGetStateOnStateComponent() throws Exception {
+    appStateManager.persistState();
+    verify(component1, atLeastOnce()).getState();
+    verify(component2, atLeastOnce()).getState();
+  }
 
-    @Test
-    public void shouldNotRestoreWorkspaceStateWhenNoActions() {
-        when(workspaceState.getActions()).thenReturn(Collections.<ActionDescriptor>emptyList());
+  @Test
+  public void shouldSaveStateInFile() throws Exception {
+    JsonObject firstComponentState = Json.createObject();
+    firstComponentState.put("key1", "value1");
+    when(component1.getState()).thenReturn(firstComponentState);
 
-        verify(actionManager, never()).performActions(Matchers.<List<Pair<Action, ActionEvent>>>anyObject(), anyBoolean());
-    }
+    JsonObject secondComponentState = Json.createObject();
+    secondComponentState.put("key2", "value2");
+    when(component2.getState()).thenReturn(secondComponentState);
+
+    appStateManager.persistState();
+
+    verify(component1).getState();
+    verify(component2).getState();
+    verify(appStateService).saveState(saveStateArgumentCaptor.capture());
+
+    String json = saveStateArgumentCaptor.getValue();
+    assertThat(json).isNotNull();
+    JsonObject appState = Json.parse(json);
+    assertThat(appState).isNotNull();
+
+    JsonObject jsonObject1 = appState.getObject(COMPONENT_ONE_ID);
+    assertThat(jsonObject1.jsEquals(firstComponentState)).isTrue();
+
+    JsonObject jsonObject2 = appState.getObject(COMPONENT_TWO_ID);
+    assertThat(jsonObject2.jsEquals(secondComponentState)).isTrue();
+  }
+
+  @Test
+  public void restoreShouldCallLoadState() throws Exception {
+    JsonObject appState = Json.createObject();
+    JsonObject firstComponent = Json.createObject();
+    appState.put("component1", firstComponent);
+    firstComponent.put("key1", "value1");
+    when(promiseProvider.resolve(nullable(Void.class))).thenReturn(sequentialRestore);
+
+    appStateManager.restoreState(appState);
+
+    verify(sequentialRestore).thenPromise(sequentialRestoreThenFunction.capture());
+    sequentialRestoreThenFunction.getValue().apply(null);
+
+    ArgumentCaptor<JsonObject> stateCaptor = ArgumentCaptor.forClass(JsonObject.class);
+    verify(component1).loadState(stateCaptor.capture());
+
+    JsonObject jsonObject = stateCaptor.getValue();
+    assertThat(jsonObject.hasKey("key1")).isTrue();
+    assertThat(jsonObject.getString("key1")).isEqualTo("value1");
+  }
 }

@@ -1,28 +1,24 @@
-FROM node:0.10
-WORKDIR /usr/src/app
+# Copyright (c) 2012-2017 Red Hat, Inc
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Eclipse Public License v1.0
+# which accompanies this distribution, and is available at
+# http://www.eclipse.org/legal/epl-v10.html
+
+# This is a Dockerfile allowing to build dashboard by using a docker container.
+# Build step: $ docker build -t eclipse-che-dashboard
+# It builds an archive file that can be used by doing later
+#  $ docker run --rm eclipse-che-dashboard | tar -C target/ -zxf -
+FROM node:6.11.2
 
 RUN apt-get update && \
-    apt-get -y install sudo procps wget unzip mc gcc make libnotify-bin && \
-    echo "%sudo ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
-    useradd -u 5001 -G users,sudo -d /home/user --shell /bin/bash -m user && \
-    echo "secret\nsecret" | passwd user && usermod -u 1000 user && apt-get clean
+    apt-get install -y git \
+    && apt-get -y clean \
+    && rm -rf /var/lib/apt/lists/*
+COPY package.json /dashboard/
+RUN cd /dashboard && npm install
+COPY bower.json /dashboard/
+RUN cd /dashboard && ./node_modules/.bin/bower install --allow-root
+COPY . /dashboard/
+RUN cd /dashboard && npm run build && cd target/ && tar zcf /tmp/dashboard.tar.gz dist/
 
-RUN npm install -g gulp bower
-
-ENV CODENVY_APP_BIND_DIR /home/user/application
-VOLUME ["/home/user/application"]
-RUN mkdir -p /usr/src/app/bower_components && chown -R user /usr/src/app/bower_components && mkdir -p /usr/src/app/node_modules && chown -R user /usr/src/app/node_modules
-
-EXPOSE 5000
-ENV CODENVY_APP_PORT_5000_HTTP 5000
-
-USER user
-ADD package.json package.json
-ADD bower.json bower.json
-
-RUN bower install && npm install
-
-CMD  echo "Updating rights..." && sudo chmod a+rw  /home/user/application/ && \
-     ([ -d /home/user/application/node_modules ] || (echo "Initializing NPM dependencies..." && cp -a /usr/src/app/node_modules /home/user/application/)) && \
-     ([ -d /home/user/application/bower_components ] || (echo "Initializing Bower dependencies..." && cp -a /usr/src/app/bower_components /home/user/application/)) && \
-    umask 0 && cd /home/user/application/ && gulp serve --server http://machines.codenvy-stg.com/
+CMD zcat /tmp/dashboard.tar.gz

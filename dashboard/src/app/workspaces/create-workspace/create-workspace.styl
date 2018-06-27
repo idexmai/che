@@ -1,41 +1,43 @@
-.create-workspace
-  padding 0 14px
+.create-workspace-progress
+  position absolute
+  top 56px
+  z-index 2
 
-  button
-    margin-left 0
-    margin-right 0
-    margin-bottom 16px
+.create-workspace-toolbar
+  .che-toolbar-header > div:last-child
+    bottom 9px
 
-  .workspace-environment-name + div
-    margin-top 8px
+.create-workspace-header-button .che-button-dropdown
+  button.che-button,
+  .fa-caret-down
+    min-height 36px
+    height 36px
 
-    .workspace-machine
-      margin-left 45px
+  .area-dropdown.dropdown-menu
+    top 36px
 
-      .che-ram-allocation-slider .slider-wrapper
-        margin-bottom -15px
 
-md-select.create-workspace-select
-  width 100%
-  margin-top 0
-  margin-bottom 0
+md-content.create-workspace-content
+  background-color $very-light-grey-background-color !important
+  overflow auto
+  padding 15px
 
-.create-workspace-input-with-description
-  margin-bottom -15px
+  .che-label-container-label-name
+    text-transform uppercase
+    color $grey-input-label-color !important
+    font-weight bold !important
 
-.create-workspace-input-with-description > span:last-child
-  bottom 15px
-  font-size 12px
-  line-height 12px
-  position relative
-  color $disabled-color
+  .che-label-container-content
+    min-width 850px
 
-.create-workspace-space-top
-  margin-top 15px
+  .create-workspace-content-hidden
+    visibility hidden
 
-.create-workspace-members .workspace-members-content
-  padding-left 0
-  padding-right 0
+  .create-workspace-footer-button
+    width 100%
 
-.create-workspace .che-label-container-content .create-workspace-input
-  margin -6px 0
+    button
+      margin 0 !important
+      width 100% !important
+
+

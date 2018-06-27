@@ -1,13 +1,13 @@
 <!--
 
-    Copyright (c) 2015 Codenvy, S.A.
+    Copyright (c) 2015-2018 Red Hat, Inc.
     All rights reserved. This program and the accompanying materials
     are made available under the terms of the Eclipse Public License v1.0
     which accompanies this distribution, and is available at
     http://www.eclipse.org/legal/epl-v10.html
 
     Contributors:
-      Codenvy, S.A. - initial API and implementation
+      Red Hat, Inc. - initial API and implementation
 
 -->
 <div class="list-environment-variables"
@@ -37,11 +37,11 @@
           <che-list-header-column flex="25"
                                   che-sort-value="listEnvVariablesController.envVariableOrderBy"
                                   che-sort-item="name"
-                                  che-column-title='Variable'></che-list-header-column>
+                                  che-column-title="Variable"></che-list-header-column>
           <che-list-header-column flex="65"
-                                  che-column-title='Value'></che-list-header-column>
+                                  che-column-title="Value"></che-list-header-column>
           <che-list-header-column flex="10"
-                                  che-column-title='Action'></che-list-header-column>
+                                  che-column-title="Action"></che-list-header-column>
         </div>
       </div>
     </che-list-header>
@@ -75,7 +75,7 @@
             <div flex="10">
               <div class="che-list-actions"
                    ng-click="listEnvVariablesController.showEditDialog($event,envVariable.name,envVariable.value)">
-                <i class="fa fa-pencil" tooltip="Edit"></i>
+                <i class="fa fa-pencil" uib-tooltip="Edit"></i>
               </div>
             </div>
           </div>
@@ -89,12 +89,12 @@
     <div flex>
       <che-button-default class="che-list-add-button"
                           che-button-title="Add" name="addButton"
-                          ng-click="listEnvVariablesController.showAddDialog($event)"></che-button-default>
+                          ng-click="listEnvVariablesController.showEditDialog($event)"></che-button-default>
     </div>
     <div flex-offset="5" ng-if="listEnvVariablesController.envVariablesList.length > 0">
       <che-button-primary-flat ng-disabled="(listEnvVariablesController.envVariablesSelectedNumber === 0)"
                                che-button-title="Delete" name="deleteButton"
-                               ng-click="listEnvVariablesController.deleteSelectedEnvVariables()"></che-button-primary-flat>
+                               ng-click="listEnvVariablesController.deleteSelectedServers()"></che-button-primary-flat>
     </div>
   </div>
 </div>

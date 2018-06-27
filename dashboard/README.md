@@ -1,22 +1,32 @@
 ## About Eclipse Che
-Eclipse Che is a next generation Eclipse IDE and open source alternative to IntelliJ. This repository is licensed under the Eclipse Public License 1.0. Visit [Eclipse Che's Web site](http://eclipse.org/che) for feature information or the main [Che assembly repository](http://github.com/codenvy/che) for a description of all participating repositories.
+Eclipse Che is a next generation Eclipse IDE and open source alternative to IntelliJ. This repository is licensed under the Eclipse Public License 1.0. Visit [Eclipse Che's Web site](https://eclipse.org/che) for feature information or the main [Che assembly repository](https://github.com/codenvy/che) for a description of all participating repositories.
 
 Che Dashboard
 ==============
 
-#Requirements
+## Requirements
+- Docker
 
-This  version is using bower and gulp as tools.
-```sh
-$ npm install --global bower gulp
-```
-
-#Quick start
+## Quick start
 
 ```sh
 cd che/dashboard
 mvn clean install
 ```
+
+note: by default it will build dashboard using a docker image.
+If all required tools are installed locally, the native profile can be used instead of the docker build by following command:
+
+```sh
+$ mvn -Pnative clean install
+```
+
+Required tools for native build:
+- Python `v2.7.x`(`v3.x.x`currently not supported)
+- Node.js `v4.x.x`, `v5.x.x` or `v6.x.x`
+- npm
+
+Installation instructions for Node.js and npm can be found on the following [link](https://docs.npmjs.com/getting-started/installing-node). 
 
 ## Running
 In order to run the project, the serve command is used
@@ -127,7 +137,8 @@ list-projects
 ## AngularJS recommandation
 As classes are available, the controller will be designed as es6 classes.
 
-All injection required will be done through the constructor by adding also the @ngInject annotation.
+All injection required will be done through the constructor by adding also the  static $inject = ['$toBeInjected']; line.
+
 
 Also properties are bound with this. scope (so avoid to use $scope in injection as this will be more aligned with AngularJS 2.0 where scope will disappear)
 
@@ -139,9 +150,10 @@ example
  */
 class CheToggleCtrl {
 
+  static $inject = ['$http'];
+
   /**
    * Constructor that is using resource injection
-   * @ngInject for Dependency injection
    */
   constructor ($http) {
     this.$http = $http; // to use $http in other methods, use this.$http

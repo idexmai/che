@@ -1,39 +1,37 @@
-/*******************************************************************************
- * Copyright (c) 2012-2016 Codenvy, S.A.
+/*
+ * Copyright (c) 2012-2018 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
- *******************************************************************************/
+ *   Red Hat, Inc. - initial API and implementation
+ */
 package org.eclipse.che.plugin.languageserver.ide.hover;
 
+import com.google.common.base.Joiner;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
-import org.eclipse.che.api.promises.client.Function;
-import org.eclipse.che.api.promises.client.FunctionException;
+import java.util.ArrayList;
+import java.util.List;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.js.JsPromise;
 import org.eclipse.che.ide.api.editor.EditorAgent;
 import org.eclipse.che.ide.api.editor.EditorPartPresenter;
 import org.eclipse.che.ide.api.editor.document.Document;
-import org.eclipse.che.ide.api.editor.text.TextPosition;
 import org.eclipse.che.ide.api.editor.texteditor.TextEditor;
-import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.editor.orion.client.OrionHoverHandler;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionHoverContextOverlay;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionHoverOverlay;
 import org.eclipse.che.ide.util.StringUtils;
 import org.eclipse.che.plugin.languageserver.ide.editor.LanguageServerEditorConfiguration;
 import org.eclipse.che.plugin.languageserver.ide.service.TextDocumentServiceClient;
-import org.eclipse.che.plugin.languageserver.shared.lsapi.HoverDTO;
-import org.eclipse.che.plugin.languageserver.shared.lsapi.MarkedStringDTO;
-import org.eclipse.che.plugin.languageserver.shared.lsapi.PositionDTO;
-import org.eclipse.che.plugin.languageserver.shared.lsapi.TextDocumentIdentifierDTO;
-import org.eclipse.che.plugin.languageserver.shared.lsapi.TextDocumentPositionParamsDTO;
+import org.eclipse.che.plugin.languageserver.ide.util.DtoBuildHelper;
+import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.MarkedString;
+import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 /**
  * Provides hover LS functionality for Orion editor.
@@ -43,70 +41,69 @@ import org.eclipse.che.plugin.languageserver.shared.lsapi.TextDocumentPositionPa
 @Singleton
 public class HoverProvider implements OrionHoverHandler {
 
-    private final EditorAgent               editorAgent;
-    private final TextDocumentServiceClient client;
-    private final DtoFactory                dtoFactory;
+  private final EditorAgent editorAgent;
+  private final TextDocumentServiceClient client;
+  private final DtoBuildHelper helper;
 
-    @Inject
-    public HoverProvider(EditorAgent editorAgent, TextDocumentServiceClient client, DtoFactory dtoFactory) {
-        this.editorAgent = editorAgent;
-        this.client = client;
-        this.dtoFactory = dtoFactory;
+  @Inject
+  public HoverProvider(
+      EditorAgent editorAgent, TextDocumentServiceClient client, DtoBuildHelper helper) {
+    this.editorAgent = editorAgent;
+    this.client = client;
+    this.helper = helper;
+  }
+
+  @Override
+  public JsPromise<OrionHoverOverlay> computeHover(OrionHoverContextOverlay context) {
+    EditorPartPresenter activeEditor = editorAgent.getActiveEditor();
+    if (activeEditor == null || !(activeEditor instanceof TextEditor)) {
+      return null;
     }
 
-    @Override
-    public JsPromise<OrionHoverOverlay> computeHover(OrionHoverContextOverlay context) {
-        EditorPartPresenter activeEditor = editorAgent.getActiveEditor();
-        if (activeEditor == null || !(activeEditor instanceof TextEditor)) {
-            return null;
-        }
-
-        TextEditor editor = ((TextEditor)activeEditor);
-        if (!(editor.getConfiguration() instanceof LanguageServerEditorConfiguration)) {
-            return null;
-        }
-
-        LanguageServerEditorConfiguration configuration = (LanguageServerEditorConfiguration)editor.getConfiguration();
-        if (configuration.getServerCapabilities().isHoverProvider() == null || !configuration.getServerCapabilities().isHoverProvider()) {
-            return null;
-        }
-
-        Document document = editor.getDocument();
-
-        TextDocumentPositionParamsDTO paramsDTO = dtoFactory.createDto(TextDocumentPositionParamsDTO.class);
-        TextDocumentIdentifierDTO identifierDTO = dtoFactory.createDto(TextDocumentIdentifierDTO.class);
-        identifierDTO.setUri(editor.getEditorInput().getFile().getLocation().toString());
-
-        PositionDTO positionDTO = dtoFactory.createDto(PositionDTO.class);
-        TextPosition position = document.getPositionFromIndex(context.getOffset());
-        positionDTO.setCharacter(position.getCharacter());
-        positionDTO.setLine(position.getLine());
-
-        paramsDTO.setUri(editor.getEditorInput().getFile().getLocation().toString());
-        paramsDTO.setTextDocument(identifierDTO);
-        paramsDTO.setPosition(positionDTO);
-
-        Promise<HoverDTO> promise = client.hover(paramsDTO);
-        Promise<OrionHoverOverlay> then = promise.then(new Function<HoverDTO, OrionHoverOverlay>() {
-            @Override
-            public OrionHoverOverlay apply(HoverDTO arg) throws FunctionException {
-                OrionHoverOverlay hover = OrionHoverOverlay.create();
-                hover.setType("markdown");
-                StringBuilder b = new StringBuilder();
-                for (MarkedStringDTO dto : arg.getContents()) {
-                    b.append(dto.getValue());
-                }
-                String content = b.toString();
-                //do not show hover with only white spaces
-                if (StringUtils.isNullOrWhitespace(content)) {
-                    return null;
-                }
-                hover.setContent(content);
-
-                return hover;
-            }
-        });
-        return (JsPromise<OrionHoverOverlay>)then;
-
+    TextEditor editor = ((TextEditor) activeEditor);
+    if (!(editor.getConfiguration() instanceof LanguageServerEditorConfiguration)) {
+      return null;
     }
+
+    LanguageServerEditorConfiguration configuration =
+        (LanguageServerEditorConfiguration) editor.getConfiguration();
+    if (configuration.getServerCapabilities().getHoverProvider() == null
+        || !configuration.getServerCapabilities().getHoverProvider()) {
+      return null;
+    }
+
+    Document document = editor.getDocument();
+    TextDocumentPositionParams paramsDTO = helper.createTDPP(document, context.getOffset());
+
+    Promise<Hover> promise = client.hover(paramsDTO);
+    Promise<OrionHoverOverlay> then =
+        promise.then(
+            (Hover arg) -> {
+              OrionHoverOverlay hover = OrionHoverOverlay.create();
+              hover.setType("markdown");
+              String content = renderContent(arg);
+              // do not show hover with only white spaces
+              if (StringUtils.isNullOrWhitespace(content)) {
+                return null;
+              }
+              hover.setContent(content);
+
+              return hover;
+            });
+    return (JsPromise<OrionHoverOverlay>) then;
+  }
+
+  private String renderContent(Hover hover) {
+    List<String> contents = new ArrayList<>();
+    for (Either<String, MarkedString> dto : hover.getContents()) {
+      if (dto.isLeft()) {
+        // plain markdown text
+        contents.add(dto.getLeft());
+      } else {
+        contents.add(dto.getRight().getLanguage());
+        contents.add(dto.getRight().getValue());
+      }
+    }
+    return Joiner.on("\n\n").join(contents);
+  }
 }

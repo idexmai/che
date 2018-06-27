@@ -1,5 +1,222 @@
 [
   {
+    "id": "java-theia-docker",
+    "creator": "ide",
+    "name": "Java Theia (docker)",
+    "description": "Che development + Theia in a sidecar container (docker)",
+    "scope": "general",
+    "tags": [
+      "Java 1.8",
+      "Theia",
+      "Alpine",
+      "CentOS"
+    ],
+    "workspaceConfig": {
+      "environments": {
+        "default": {
+          "machines": {
+            "theia": {
+              "attributes": {},
+              "servers": {
+                "theia": {
+                  "protocol": "http",
+                  "port": "3000",
+                  "attributes": {
+                    "type": "ide"
+                  }
+                }
+              },
+              "volumes": {
+                "projects": {
+                  "path": "/projects"
+                },
+                "theia": {
+                  "path": "/home/theia"
+                }
+              },
+              "installers": [],
+              "env": {}
+            },
+            "dev-machine": {
+              "attributes": {},
+              "servers": {
+                "theia-dev": {
+                  "protocol": "http",
+                  "port": "3030"
+                }
+              },
+              "volumes": {
+                "projects": {
+                  "path": "/projects"
+                }
+              },
+              "installers": [],
+              "env": {}
+            }
+          },
+          "recipe": {
+            "type": "compose",
+            "content": "services:\n theia:\n  image: eclipse/che-theia:0.3.10-nightly\n  mem_limit: 1073741824\n dev-machine:\n  image: eclipse/che-dev:nightly\n  mem_limit: 2147483648\n  depends_on:\n    - theia",
+            "contentType": "application/x-yaml"
+          }
+        }
+      },
+      "defaultEnv": "default",
+      "name": "theia",
+      "projects": [],
+      "commands": []
+    },
+    "stackIcon": {
+      "name": "type-theia.svg",
+      "mediaType": "image/svg+xml"
+    }
+  },
+  {
+    "id": "java-theia-openshift",
+    "creator": "ide",
+    "name": "Java Theia (openshift)",
+    "description": "Che development + Theia in a sidecar container (openshift)",
+    "scope": "general",
+    "tags": [
+      "Java 1.8",
+      "Theia",
+      "Alpine",
+      "CentOS"
+    ],
+    "workspaceConfig": {
+      "environments": {
+        "default": {
+          "machines": {
+            "ws/theia": {
+              "attributes": {},
+
+              "servers": {
+                "theia": {
+                  "protocol": "http",
+                  "port": "3000",
+                  "attributes": {
+                    "type": "ide"
+                  }
+                }
+              },
+              "volumes": {
+                "projects": {
+                  "path": "/projects"
+                },
+                "theia": {
+                  "path": "/home/theia"
+                }
+              },
+              "installers": [],
+              "env": {}
+            },
+            "ws/dev": {
+              "attributes": {},
+              "servers": {
+                "theia-dev": {
+                  "protocol": "http",
+                  "port": "3030"
+                }
+              },
+              "volumes": {
+                "projects": {
+                  "path": "/projects"
+                }
+              },
+              "installers": [],
+              "env": {}
+            }
+          },
+          "recipe": {
+            "type": "openshift",
+            "content": "---\nkind: List\nitems:\n-\n  apiVersion: v1\n  kind: Pod\n  metadata:\n    name: ws\n  spec:\n    containers:\n      -\n        image: eclipse/che-theia:0.3.10-nightly\n        name: theia\n      -\n        image: eclipse/che-dev:nightly\n        name: dev",
+            "contentType": "application/x-yaml"
+          }
+        }
+      },
+      "defaultEnv": "default",
+      "name": "theia",
+      "projects": [],
+      "commands": []
+    },
+    "stackIcon": {
+      "name": "type-theia.svg",
+      "mediaType": "image/svg+xml"
+    }
+  },
+  {
+    "id": "java-centos-mysql",
+    "creator": "ide",
+    "name": "Java-MySQL CentOS",
+    "description": "Multi-machine environment with Java CentOS and MySQL database",
+    "scope": "advanced",
+    "tags": [
+      "Java 1.8, Tomcat 8, MySQL 5.7"
+    ],
+    "components": [],
+    "workspaceConfig": {
+      "environments": {
+        "default": {
+          "machines": {
+            "dev-machine": {
+              "installers": [
+                "org.eclipse.che.exec", "org.eclipse.che.terminal", "org.eclipse.che.ws-agent"
+              ],
+              "servers": {
+                "tomcat8" : {
+                  "port" : "8080",
+                  "protocol" : "http"
+                },
+                "tomcat8-debug" : {
+                  "port" : "8000",
+                  "protocol" : "http"
+                }
+              },
+              "attributes" : {}
+            },
+            "db": {
+              "installers": [
+                "org.eclipse.che.terminal",
+                "org.eclipse.che.exec"
+              ],
+              "servers": {
+                "mysql" : {
+                  "port" : "3306",
+                  "protocol" : "tcp"
+                }
+              },
+              "attributes" : {}
+            }
+          },
+          "recipe": {
+            "content": "services:\n db:\n  image: centos/mysql-57-centos7\n  environment:\n   MYSQL_ROOT_PASSWORD: password\n   MYSQL_DATABASE: petclinic\n   MYSQL_USER: petclinic\n   MYSQL_PASSWORD: password\n  mem_limit: 1073741824\n dev-machine:\n  image: eclipse/centos_jdk8\n  mem_limit: 2147483648\n  depends_on:\n    - db",
+            "contentType": "application/x-yaml",
+            "type": "compose"
+          }
+        }
+      },
+      "name": "default",
+      "defaultEnv": "default",
+      "description": null,
+      "commands": [
+        {
+          "commandLine": "mvn clean install -f ${current.project.path}",
+          "name": "build",
+          "type": "mvn"
+        },
+        {
+          "commandLine": "mysql -u $MYSQL_USER -p$MYSQL_PASSWORD -e 'show databases;'",
+          "name": "show databases",
+          "type": "custom"
+        }
+      ]
+    },
+    "stackIcon": {
+      "name": "type-java-mysql.svg",
+      "mediaType": "image/svg+xml"
+    }
+  },
+  {
     "id": "java-mysql",
     "creator": "ide",
     "name": "Java-MySQL",
@@ -10,43 +227,65 @@
     ],
     "components": [
       {
+        "name": "Ubuntu",
+        "version": "16.04"
+      },
+      {
         "name": "JDK",
-        "version": "1.8.0_45"
+        "version": "1.8.0_162"
       },
       {
         "name": "Maven",
-        "version": "3.2.2"
+        "version": "3.3.9"
       },
       {
         "name": "Tomcat",
         "version": "8.0.24"
+      },
+      {
+        "name": "MySQL",
+        "version": "5.7.19"
       }
     ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/ubuntu_jdk8"
-    },
     "workspaceConfig": {
       "environments": {
         "default": {
           "machines": {
             "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
+              "installers": [
+                "org.eclipse.che.exec", "org.eclipse.che.terminal", "org.eclipse.che.ws-agent"
               ],
-              "servers": {},
+              "servers": {
+                "tomcat8" : {
+                  "port" : "8080",
+                  "protocol" : "http"
+                },
+                "tomcat8-debug" : {
+                  "port" : "8000",
+                  "protocol" : "http"
+                },
+                "codeserver" : {
+                  "port" : "9876",
+                  "protocol" : "http"
+                }
+              },
               "attributes" : {}
             },
             "db": {
-              "agents": [
-                "org.eclipse.che.terminal"
+              "installers": [
+                "org.eclipse.che.exec", "org.eclipse.che.terminal"
               ],
-              "servers": {},
+              "servers": {
+                "mysql" : {
+                  "port" : "3306",
+                  "protocol" : "tcp"
+                }
+              },
               "attributes" : {}
             }
           },
           "recipe": {
-            "content": "services:\n db:\n  image: codenvy/mysql\n  environment:\n   MYSQL_DATABASE: petclinic\n   MYSQL_USER: petclinic\n   MYSQL_PASSWORD: password\n  mem_limit: 1073741824\n dev-machine:\n  image: codenvy/ubuntu_jdk8\n  mem_limit: 2147483648\n  depends_on:\n    - db",
+            "content": "services:\n db:\n  image: eclipse/mysql\n  environment:\n   MYSQL_ROOT_PASSWORD: password\n   MYSQL_DATABASE: petclinic\n   MYSQL_USER: petclinic\n   MYSQL_PASSWORD: password\n  mem_limit: 1073741824\n dev-machine:\n  image: eclipse/ubuntu_jdk8\n  mem_limit: 2147483648\n  depends_on:\n    - db",
             "contentType": "application/x-yaml",
             "type": "compose"
           }
@@ -69,98 +308,6 @@
     }
   },
   {
-    "id": "che-in-che",
-    "creator": "ide",
-    "name": "Eclipse Che",
-    "description": "Utilities to build Che in Che with Docker, JDK 8, and Maven.",
-    "scope": "general",
-    "tags": [
-      "Docker",
-      "Java",
-      "JDK",
-      "Maven",
-      "Alpine",
-      "Git"
-    ],
-    "components": [
-      {
-        "name": "Docker",
-        "version": "1.12.0"
-      },
-      {
-        "name": "JDK",
-        "version": "1.8.0_92"
-      },
-      {
-        "name": "Maven",
-        "version": "3.3.9"
-      }
-    ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/alpine_jdk8"
-    },
-    "workspaceConfig": {
-      "environments": {
-        "default": {
-          "machines": {
-            "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
-              ],
-              "servers": {},
-              "attributes" : {
-                "memoryLimitBytes": "2147483648"
-              }
-            }
-          },
-          "recipe": {
-            "location": "codenvy/alpine_jdk8",
-            "type": "dockerimage"
-          }
-        }
-      },
-      "name": "default",
-      "defaultEnv": "default",
-      "description": null,
-      "commands": [
-        {
-          "commandLine": "sudo docker rename che-server che-host;sudo apk update; sudo apk add curl;export HOST_IP=$(curl -s https://4.ifcfg.me/)",
-          "name": "1. Setup Che in Che",
-          "type": "custom"
-        },
-        {
-          "commandLine": "mvn clean install -f /projects/che/assembly/assembly-main",
-          "name": "2. Build Che in Che",
-          "type": "custom"
-        },
-        {
-          "commandLine": "export CHE_BIN_PATH=$(ls -d /projects/che/assembly/assembly-main/target/eclipse-che-*/eclipse-che-*); sudo docker run -t -v /var/run/docker.sock:/var/run/docker.sock --env CHE_LOCAL_BINARY=${CHE_BIN_PATH//projects/\"home/user/che/workspaces/che\"} --env CHE_HOST_IP=$HOST_IP --env CHE_PORT=54321 codenvy/che-launcher start",
-          "name": "3. Run Che in Che",
-          "type": "custom",
-          "attributes": {
-              "previewUrl": "http://<host.ip>:54321/"
-            }
-        },
-        {
-          "commandLine": "sudo docker run -t -v /var/run/docker.sock:/var/run/docker.sock codenvy/che-launcher stop",
-          "name": "4. Stop Che in Che",
-          "type": "custom"
-        },
-        {
-          "commandLine": "sudo docker rm -f che-server",
-          "name": "** Kill Che in Che **",
-          "type": "custom"
-        }
-
-      ]
-    },
-    "stackIcon": {
-      "name": "type-che.svg",
-      "mediaType": "image/svg+xml"
-    }
-  },
-  {
     "id": "java-default",
     "creator": "ide",
     "name": "Java",
@@ -170,45 +317,55 @@
       "Java",
       "JDK",
       "Maven",
-      "Tomcat",
-      "Subversion",
-      "Ubuntu",
-      "Git"
+      "Tomcat"
     ],
     "components": [
       {
+        "name": "Ubuntu",
+        "version": "16.04"
+      },
+      {
         "name": "JDK",
-        "version": "1.8.0_45"
+        "version": "1.8.0_162"
       },
       {
         "name": "Maven",
-        "version": "3.2.2"
+        "version": "3.3.9"
       },
       {
         "name": "Tomcat",
         "version": "8.0.24"
       }
     ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/ubuntu_jdk8"
-    },
     "workspaceConfig": {
       "environments": {
         "default": {
           "machines": {
             "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
+              "installers": [
+                "org.eclipse.che.exec", "org.eclipse.che.terminal", "org.eclipse.che.ws-agent"
               ],
-              "servers": {},
+              "servers": {
+                "tomcat8" : {
+                  "port" : "8080",
+                  "protocol" : "http"
+                },
+                "tomcat8-debug" : {
+                  "port" : "8000",
+                  "protocol" : "http"
+                },
+                "codeserver" : {
+                  "port" : "9876",
+                  "protocol" : "http"
+                }
+              },
               "attributes" : {
                 "memoryLimitBytes": "2147483648"
               }
             }
           },
           "recipe": {
-            "location": "codenvy/ubuntu_jdk8",
+            "content": "eclipse/ubuntu_jdk8",
             "type": "dockerimage"
           }
         }
@@ -220,7 +377,11 @@
         {
           "commandLine": "mvn clean install -f ${current.project.path}",
           "name": "build",
-          "type": "mvn"
+          "type": "mvn",
+          "attributes": {
+            "previewUrl": "",
+            "goal": "Build"
+          }
         }
       ]
     },
@@ -238,30 +399,51 @@
     "tags": [
       "Blank",
       "Ubuntu",
-      "Git",
-      "Subversion"
+      "Git"
     ],
-    "components": [],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/ubuntu_jdk8"
-    },
+    "components": [
+      {
+        "name": "Ubuntu",
+        "version": "16.04"
+      },
+      {
+        "name": "JDK",
+        "version": "1.8.0_162"
+      },
+      {
+        "name": "Maven",
+        "version": "3.3.9"
+      },
+      {
+        "name": "Tomcat",
+        "version": "8.0.24"
+      }
+    ],
     "workspaceConfig": {
       "environments": {
         "default": {
           "machines": {
             "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
+              "installers": [
+                "org.eclipse.che.exec", "org.eclipse.che.terminal", "org.eclipse.che.ws-agent"
               ],
-              "servers": {},
+              "servers": {
+                "tomcat8" : {
+                  "port" : "8080",
+                  "protocol" : "http"
+                },
+                "tomcat8-debug" : {
+                  "port" : "8000",
+                  "protocol" : "http"
+                }
+              },
               "attributes" : {
                 "memoryLimitBytes": "2147483648"
               }
             }
           },
           "recipe": {
-            "location": "codenvy/ubuntu_jdk8",
+            "content": "eclipse/ubuntu_jdk8",
             "type": "dockerimage"
           }
         }
@@ -279,47 +461,50 @@
     "id": "android-default",
     "creator": "ide",
     "name": "Android",
-    "description": "Default Android Stack with Java 1.8, Maven 3.2.3, Android (21 api level).",
+    "description": "Default Android Stack with Java 1.8 and Android SDK",
     "scope": "general",
     "tags": [
-      "Android",
-      "Ubuntu",
-      "Git"
+      "Android"
     ],
     "components": [
       {
-        "name": "Android",
-        "version": "21"
+        "name": "Centos",
+        "version": "7"
       },
       {
-        "name": "Java",
-        "version": "1.8"
+        "name": "JDK",
+        "version": "1.8.0_144"
       },
       {
         "name": "Maven",
-        "version": "3.2.3"
+        "version": "3.5.3"
+      },
+      {
+        "name": "Android API",
+        "version": "21"
       }
     ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/ubuntu_android"
-    },
     "workspaceConfig": {
       "environments": {
         "default": {
           "machines": {
             "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
+              "installers": [
+                "org.eclipse.che.exec", "org.eclipse.che.terminal", "org.eclipse.che.ws-agent"
               ],
-              "servers": {},
+              "servers": {
+                "VNC" : {
+                  "port" : "6091",
+                  "protocol" : "http"
+                }
+              },
               "attributes" : {
                 "memoryLimitBytes": "2147483648"
               }
             }
           },
           "recipe": {
-            "location": "codenvy/ubuntu_android",
+            "content": "eclipse/android",
             "type": "dockerimage"
           }
         }
@@ -331,7 +516,11 @@
         {
           "commandLine": "mvn clean install -f ${current.project.path}",
           "name": "build",
-          "type": "mvn"
+          "type": "mvn",
+          "attributes": {
+            "previewUrl": "",
+            "goal": "Build"
+          }
         }
       ]
     },
@@ -349,35 +538,37 @@
     "tags": [
       "C++",
       "gcc",
-      "make",
-      "Ubuntu",
-      "Git"
+      "make"
     ],
     "components": [
       {
-        "name": "CPP",
-        "version": "4.8.4"
+        "name": "Ubuntu",
+        "version": "16.04"
       },
       {
-        "name": "gcc",
-        "version": "4.8.4"
+        "name": "JDK",
+        "version": "1.8.0_162"
+      },
+      {
+        "name": "G++",
+        "version": "5.4.0"
+      },
+      {
+        "name": "GCC",
+        "version": "5.4.0"
       },
       {
         "name": "Make",
-        "version": "3.81"
+        "version": "4.1"
       }
     ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/cpp_gcc"
-    },
     "workspaceConfig": {
       "environments": {
         "default": {
           "machines": {
             "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
+              "installers": [
+                "org.eclipse.che.exec", "org.eclipse.che.terminal", "org.eclipse.che.ws-agent"
               ],
               "servers": {},
               "attributes" : {
@@ -386,7 +577,7 @@
             }
           },
           "recipe": {
-            "location": "codenvy/cpp_gcc",
+            "content": "eclipse/cpp_gcc",
             "type": "dockerimage"
           }
         }
@@ -398,7 +589,11 @@
         {
           "name": "run",
           "type": "custom",
-          "commandLine": "cd ${current.project.path} && make && ./a.out"
+          "commandLine": "cd ${current.project.path} && make && ./a.out",
+          "attributes": {
+            "previewUrl": "",
+            "goal": "Run"
+          }
         }
       ]
     },
@@ -411,43 +606,42 @@
     "id": "dotnet-default",
     "creator": "ide",
     "name": ".NET",
-    "description": "Default .NET Stack with .NET Core SDK",
+    "description": "Default .NET 2.0.0 Stack with .NET Core SDK",
     "scope": "general",
     "tags": [
-      "Ubuntu",
-      "dotnet",
-      "Git"
+      "Dotnet"
     ],
     "components": [
       {
         "name": "Ubuntu",
-        "version": "14.04"
+        "version": "16.04"
       },
       {
-        "name": ".NET Core SDK",
-        "version": "1.0.0-preview1-002702"
+        "name": "Dotnet",
+        "version": "2.0.0"
       }
     ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/dotnet_core"
-    },
     "workspaceConfig": {
       "environments": {
         "default": {
           "machines": {
             "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
+              "installers": [
+                "org.eclipse.che.exec", "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ls.csharp"
               ],
-              "servers": {},
+              "servers": {
+                "dotnet" : {
+                  "port" : "5000",
+                  "protocol" : "http"
+                }
+              },
               "attributes" : {
                 "memoryLimitBytes": "2147483648"
               }
             }
           },
           "recipe": {
-            "location": "codenvy/dotnet_core",
+            "content": "eclipse/dotnet_core",
             "type": "dockerimage"
           }
         }
@@ -461,7 +655,8 @@
           "type": "custom",
           "commandLine": "cd ${current.project.path} && dotnet restore",
           "attributes": {
-            "previewUrl": ""
+            "previewUrl": "",
+            "goal": "Build"
           }
         },
         {
@@ -469,7 +664,8 @@
           "type": "custom",
           "commandLine": "cd ${current.project.path} && dotnet run",
           "attributes": {
-            "previewUrl": "http://${server.port.5000}"
+            "previewUrl": "${server.dotnet}",
+            "goal": "Run"
           }
         }
       ]
@@ -483,42 +679,42 @@
     "id": "go-default",
     "creator": "ide",
     "name": "Go",
-    "description": "Default Go Stack with Go 1.6.2",
+    "description": "Default Go Stack with Go 1.10.2",
     "scope": "general",
     "tags": [
-      "Ubuntu",
       "Go"
     ],
     "components": [
       {
         "name": "Ubuntu",
-        "version": "14.04"
+        "version": "16.04"
       },
       {
         "name": "Go",
-        "version": "1.6.2"
+        "version": "1.10.2"
       }
     ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/ubuntu_go"
-    },
     "workspaceConfig": {
       "environments": {
         "default": {
           "machines": {
             "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
+              "installers": [
+                "org.eclipse.che.exec", "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ls.golang"
               ],
-              "servers": {},
+              "servers": {
+                "8080/tcp" : {
+                  "port" : "8080",
+                  "protocol" : "http"
+                }
+              },
               "attributes" : {
                 "memoryLimitBytes": "2147483648"
               }
             }
           },
           "recipe": {
-            "location": "codenvy/ubuntu_go",
+            "content": "eclipse/ubuntu_go",
             "type": "dockerimage"
           }
         }
@@ -532,7 +728,8 @@
           "type": "custom",
           "commandLine": "cd ${current.project.path} && go get -d && go run main.go",
           "attributes": {
-            "previewUrl": "http://${server.port.8080}"
+            "previewUrl": "${server.8080/tcp}",
+            "goal": "Run"
           }
         }
       ]
@@ -543,73 +740,12 @@
     }
   },
   {
-    "id": "hadoop-default",
-    "creator": "ide",
-    "name": "Hadoop",
-    "description": "Default Hadoop Stack with JDK 8, Maven and Tomcat.",
-    "scope": "advanced",
-    "tags": [
-      "Hadoop"
-    ],
-    "components": [
-      {
-        "name": "JDK",
-        "version": "1.8.0_45"
-      },
-      {
-        "name": "Maven",
-        "version": "3.2.2"
-      },
-      {
-        "name": "Tomcat",
-        "version": "8.0.24"
-      },
-      {
-        "name": "Hadoop"
-      }
-    ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/hadoop-dev"
-    },
-    "workspaceConfig": {
-      "environments": {
-        "default": {
-          "machines": {
-            "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
-              ],
-              "servers": {},
-              "attributes" : {
-                "memoryLimitBytes": "2147483648"
-              }
-            }
-          },
-          "recipe": {
-            "location": "codenvy/hadoop-dev",
-            "type": "dockerimage"
-          }
-        }
-      },
-      "name": "default",
-      "defaultEnv": "default",
-      "description": null
-    },
-    "stackIcon": {
-      "name": "type-hadoop.svg",
-      "mediaType": "image/svg+xml"
-    }
-  },
-  {
     "id": "node-default",
     "creator": "ide",
     "name": "Node",
-    "description": "Default Node Stack with Node 0.12.",
+    "description": "Default Node Stack with Node 8",
     "scope": "general",
     "tags": [
-      "Ubuntu",
-      "Git",
       "Node.JS",
       "NPM",
       "Gulp",
@@ -621,50 +757,51 @@
     ],
     "components": [
       {
-        "name": "Node.JS",
-        "version": "0.12.9"
+        "name": "Ubuntu",
+        "version": "16.04"
+      },
+      {
+        "name": "NodeJS",
+        "version": "8.11.2"
       },
       {
         "name": "NPM",
-        "version": "---"
+        "version": "5.6.0"
       },
       {
-        "name": "Gulp",
-        "version": "---"
-      },
-      {
-        "name": "Bower",
-        "version": "---"
-      },
-      {
-        "name": "Grunt",
-        "version": "---"
-      },
-      {
-        "name": "Yeoman",
-        "version": "---"
+        "name": "Typerscript",
+        "version": "2.8.3"
       }
     ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/node"
-    },
     "workspaceConfig": {
       "environments": {
         "default": {
           "machines": {
             "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
+              "installers": [
+                "org.eclipse.che.exec", "org.eclipse.che.terminal", "org.eclipse.che.ws-agent"
               ],
-              "servers": {},
+              "servers": {
+                "3000/tcp" : {
+                  "port" : "3000",
+                  "protocol" : "http"
+                },
+                "5000/tcp" : {
+                  "port" : "5000",
+                  "protocol" : "http"
+                },
+                "9000/tcp" : {
+                  "port" : "9000",
+                  "protocol" : "http"
+                }
+              },
               "attributes" : {
                 "memoryLimitBytes": "2147483648"
               }
             }
           },
           "recipe": {
-            "location": "codenvy/node",
+            "content": "eclipse/node",
             "type": "dockerimage"
           }
         }
@@ -682,59 +819,69 @@
     "id": "php-default",
     "creator": "ide",
     "name": "PHP",
-    "description": "Default PHP Stack with PHP 5.5, most popular extensions and dockerimager.",
+    "description": "Default PHP Stack with PHP 7.0, most popular extensions.",
     "scope": "general",
     "tags": [
-      "Ubuntu",
-      "Git",
       "PHP",
       "mysql",
       "sqlite",
-      "Apaide",
-      "dockerimager"
+      "Apache"
     ],
     "components": [
       {
-        "name": "PHP",
-        "version": "5.5.9"
+        "name": "Ubuntu",
+        "version": "16.04"
       },
       {
-        "name": "Apaide",
-        "version": "2"
+        "name": "PHP",
+        "version": "7.0.30"
+      },
+      {
+        "name": "Composer",
+        "version": "1.6.5"
       },
       {
         "name": "MySQL",
-        "version": "---"
+        "version": "5.7.22"
       },
       {
-        "name": "Sqlite",
-        "version": "---"
+        "name": "Zend Debugger",
+        "version": "9.0.1"
       },
       {
-        "name": "dockerimager",
-        "version": "---"
+        "name": "Apache",
+        "version": "2.4.18"
       }
     ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/php"
-    },
     "workspaceConfig": {
       "environments": {
         "default": {
           "machines": {
             "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
+              "installers": [
+                "org.eclipse.che.exec", "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ls.php", "org.eclipse.che.ls.json"
               ],
-              "servers": {},
+              "servers": {
+                "8080/tcp": {
+                  "port": "8080",
+                  "protocol": "http"
+                },
+                "8000/tcp": {
+                  "port": "8000",
+                  "protocol": "http"
+                },
+                "80/tcp": {
+                  "port": "80",
+                  "protocol": "http"
+                }
+              },
               "attributes" : {
                 "memoryLimitBytes": "2147483648"
               }
             }
           },
           "recipe": {
-            "location": "codenvy/php",
+            "content": "eclipse/php",
             "type": "dockerimage"
           }
         }
@@ -744,27 +891,48 @@
       "description": null,
       "commands": [
         {
+          "name": "run php script",
+          "type": "custom",
+          "commandLine": "[ -z ${editor.current.file.path} ] && echo \"Open a PHP file in the editor before executing this command.\" || php ${editor.current.file.path}",
+          "attributes": {
+            "previewUrl": "",
+            "goal": "Run"
+          }
+        },
+        {
+          "name": "debug php script",
+          "type": "custom",
+          "commandLine": "[ -z ${editor.current.file.path} ] && echo \"Open a PHP file in the editor before executing this command.\" || QUERY_STRING=\"start_debug=1&debug_host=localhost&debug_port=10137\" php ${editor.current.file.path}",
+          "attributes": {
+            "previewUrl": "",
+            "goal": "Debug"
+          }
+        },
+        {
           "name": "start apache",
           "type": "custom",
-          "commandLine": "sudo service apache2 start && sudo tail -f /var/log/apache2/access.log -f /var/log/apache2/error.log",
+          "commandLine": "service apache2 start && tail -f /var/log/apache2/access.log -f /var/log/apache2/error.log",
           "attributes": {
-            "previewUrl": "http://${server.port.80}/${current.project.relpath}"
+            "previewUrl": "${server.80/tcp}/${current.project.relpath}",
+            "goal": "Run"
           }
         },
         {
           "name": "stop apache",
           "type": "custom",
-          "commandLine": "sudo service apache2 stop",
+          "commandLine": "service apache2 stop",
           "attributes": {
-            "previewUrl": ""
+            "previewUrl": "",
+            "goal": "Run"
           }
         },
         {
           "name": "restart apache",
           "type": "custom",
-          "commandLine": "sudo service apache2 restart",
+          "commandLine": "service apache2 restart",
           "attributes": {
-            "previewUrl": "http://${server.port.80}/${current.project.relpath}"
+            "previewUrl": "${server.80/tcp}/${current.project.relpath}",
+            "goal": "Run"
           }
         }
       ]
@@ -782,40 +950,47 @@
     "scope": "general",
     "tags": [
       "Python 3.5",
-      "pip",
-      "Ubuntu",
-      "Git"
+      "pip"
     ],
     "components": [
+      {
+        "name": "Ubuntu",
+        "version": "16.04"
+      },
       {
         "name": "Python",
         "version": "3.5.1"
       },
       {
-        "name": "pip",
-        "version": "8.1.1"
+        "name": "PIP",
+        "version": "10.0.1"
       }
     ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/ubuntu_python:latest"
-    },
     "workspaceConfig": {
       "environments": {
         "default": {
           "machines": {
             "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
+              "installers": [
+                "org.eclipse.che.exec", "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ls.python"
               ],
-              "servers": {},
+              "servers": {
+                "8080/tcp" : {
+                  "port" : "8080",
+                  "protocol" : "http"
+                },
+                "8000/tcp" : {
+                  "port" : "8000",
+                  "protocol" : "http"
+                }
+              },
               "attributes" : {
                 "memoryLimitBytes": "2147483648"
               }
             }
           },
           "recipe": {
-            "location": "codenvy/ubuntu_python:latest",
+            "content": "eclipse/ubuntu_python:latest",
             "type": "dockerimage"
           }
         }
@@ -829,7 +1004,8 @@
           "type": "custom",
           "commandLine": "cd ${current.project.path} && python main.py",
           "attributes": {
-            "previewUrl": ""
+            "previewUrl": "",
+            "goal": "Run"
           }
         }
       ]
@@ -843,49 +1019,52 @@
     "id": "rails-default",
     "creator": "ide",
     "name": "Rails",
-    "description": "Default Rails Stack with Ruby 2.3.0, Rails 4.2.6, Bundler 1.11.2.",
+    "description": "Default Rails Stack with Ruby 2.4.4, Rails 5.0.1, Bundler 1.16.2.",
     "scope": "general",
     "tags": [
       "Ruby",
       "Rails",
-      "Bundler",
-      "Ubuntu",
-      "Git"
+      "Bundler"
     ],
     "components": [
       {
+        "name": "Ubuntu",
+        "version": "16.04"
+      },
+      {
         "name": "Ruby",
-        "version": "2.3.0"
+        "version": "2.4.4"
       },
       {
         "name": "Rails",
-        "version": "4.2.6"
+        "version": "5.0.1"
       },
       {
         "name": "Bundler",
-        "version": "1.11.2"
+        "version": "1.16.2"
       }
     ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/ubuntu_rails"
-    },
     "workspaceConfig": {
       "environments": {
         "default": {
           "machines": {
             "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
+              "installers": [
+                "org.eclipse.che.exec", "org.eclipse.che.terminal", "org.eclipse.che.ws-agent"
               ],
-              "servers": {},
+              "servers": {
+                "3000/tcp" : {
+                  "port" : "3000",
+                  "protocol" : "http"
+                }
+              },
               "attributes" : {
                 "memoryLimitBytes": "2147483648"
               }
             }
           },
           "recipe": {
-            "location": "codenvy/ubuntu_rails",
+            "content": "eclipse/ruby_rails",
             "type": "dockerimage"
           }
         }
@@ -899,7 +1078,8 @@
           "type": "custom",
           "commandLine": "cd ${current.project.path} && bundle install",
           "attributes": {
-            "previewUrl": ""
+            "previewUrl": "",
+            "goal": "Build"
           }
         },
         {
@@ -907,7 +1087,8 @@
           "type": "custom",
           "commandLine": "cd ${current.project.path} && rails server -b 0.0.0.0",
           "attributes": {
-            "previewUrl": "http://${server.port.3000}"
+            "previewUrl": "${server.3000/tcp}",
+            "goal": "Run"
           }
         }
       ]
@@ -915,100 +1096,6 @@
     "stackIcon": {
       "name": "type-ruby.svg",
       "mediaType": "image/svg+xml"
-    }
-  },
-  {
-    "id": "debian",
-    "creator": "ide",
-    "name": "Debian",
-    "description": "Simple stack with Debian (Jessie).",
-    "scope": "advanced",
-    "tags": [
-      "Debian"
-    ],
-    "components": [
-      {
-        "name": "Debian",
-        "version": "Jessie"
-      }
-    ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/debian_jre"
-    },
-    "workspaceConfig": {
-      "environments": {
-        "default": {
-          "machines": {
-            "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
-              ],
-              "servers": {},
-              "attributes" : {
-                "memoryLimitBytes": "2147483648"
-              }
-            }
-          },
-          "recipe": {
-            "location": "codenvy/debian_jre",
-            "type": "dockerimage"
-          }
-        }
-      },
-      "name": "default",
-      "defaultEnv": "default",
-      "description": null
-    }
-  },
-  {
-    "id": "debianlsp",
-    "creator": "ide",
-    "name": "Debian LSP",
-    "description": "Simple stack with Debian (Jessie) to test LSP",
-    "scope": "advanced",
-    "tags": [
-      "Debian",
-      "LSP"
-    ],
-    "components": [
-      {
-        "name": "Debian",
-        "version": "Jessie"
-      }
-    ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/debian_jre"
-    },
-    "workspaceConfig": {
-      "environments": {
-        "default": {
-          "machines": {
-            "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", 
-                "org.eclipse.che.ws-agent", 
-                "org.eclipse.che.ssh",
-                "org.eclipse.che.ls.csharp",
-                "org.eclipse.che.ls.json",
-                "org.eclipse.che.ls.php"
-              ],
-              "servers": {},
-              "attributes" : {
-                "memoryLimitBytes": "2147483648"
-              }
-            }
-          },
-          "recipe": {
-            "location": "codenvy/debian_jre",
-            "type": "dockerimage"
-          }
-        }
-      },
-      "name": "default",
-      "defaultEnv": "default",
-      "description": null
     }
   },
   {
@@ -1020,49 +1107,121 @@
     "tags": [
       "Java",
       "JDK",
-      "Maven",
-      "Tomcat",
-      "CentOS",
-      "Git"
+      "Maven"
+    ],
+    "components": [
+      {
+        "name": "Centos",
+        "version": "7"
+      },
+      {
+        "name": "OpenJDK",
+        "version": "1.8.0_144"
+      }
+    ],
+    "workspaceConfig": {
+      "environments": {
+        "default": {
+          "machines": {
+            "dev-machine": {
+              "installers": [
+                "org.eclipse.che.exec", "org.eclipse.che.terminal", "org.eclipse.che.ws-agent"
+              ],
+              "servers": {
+                "tomcat8" : {
+                  "port" : "8080",
+                  "protocol" : "http"
+                },
+                "tomcat8-debug" : {
+                  "port" : "8000",
+                  "protocol" : "http"
+                }
+              },
+              "attributes" : {
+                "memoryLimitBytes": "2147483648"
+              }
+            }
+          },
+          "recipe": {
+            "content": "eclipse/centos_jdk8",
+            "type": "dockerimage"
+          }
+        }
+      },
+      "name": "default",
+      "defaultEnv": "default",
+      "description": null,
+      "commands": [
+        {
+          "commandLine": "mvn clean install -f ${current.project.path}",
+          "name": "build",
+          "type": "mvn",
+          "attributes": {
+            "previewUrl": "",
+            "goal": "Build"
+          }
+        }
+      ]
+    },
+    "stackIcon": {
+      "name": "type-java.svg",
+      "mediaType": "image/svg+xml"
+    }
+  },
+  {
+    "id": "vert.x",
+    "creator": "Clement Escoffier",
+    "name": "Eclipse Vert.x",
+    "description": "Eclipse Vert.x Stack on CentOS with OpenJDK and Maven",
+    "scope": "advanced",
+    "tags": [
+      "Vert.x"
     ],
     "components": [
       {
         "name": "CentOS",
-        "version": "---"
+        "version": "7"
       },
       {
-        "name": "JDK",
-        "version": "1.8.0_45"
+        "name": "OpenJDK",
+        "version": "1.8.0_161"
       },
       {
-        "name": "Maven",
-        "version": "3.2.2"
-      },
-      {
-        "name": "Tomcat",
-        "version": "8.0.24"
+        "name": "RH-Maven",
+        "version": "3.3.9"
       }
     ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/centos_jdk8"
-    },
     "workspaceConfig": {
       "environments": {
         "default": {
           "machines": {
             "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
+              "installers": [
+                "org.eclipse.che.exec",
+                "org.eclipse.che.terminal",
+                "org.eclipse.che.ws-agent"
               ],
-              "servers": {},
-              "attributes" : {
+              "servers": {
+                "vertx" : {
+                  "port" : "8080",
+                  "protocol" : "http"
+                },
+                "tomcat8-debug" : {
+                  "port" : "8000",
+                  "protocol" : "http"
+                },
+                "vertx-debug" : {
+                  "port" : "5005",
+                  "protocol" : "http"
+                }
+              },
+              "attributes": {
                 "memoryLimitBytes": "2147483648"
               }
             }
           },
           "recipe": {
-            "location": "codenvy/centos_jdk8",
+            "content": "registry.centos.org/che-stacks/vertx",
             "type": "dockerimage"
           }
         }
@@ -1070,13 +1229,31 @@
       "name": "default",
       "defaultEnv": "default",
       "description": null,
-      "commands": [
-        {
-          "commandLine": "mvn clean install -f ${current.project.path}",
-          "name": "build",
-          "type": "mvn"
+      "commands": [{
+        "commandLine": "scl enable rh-maven33 'mvn clean install -f ${current.project.path}'",
+        "name": "build",
+        "type": "mvn",
+        "attributes": {
+          "previewUrl": "",
+          "goal": "Build"
         }
-      ]
+      }, {
+        "commandLine": "scl enable rh-maven33 'mvn compile vertx:run -f ${current.project.path} -Dvertx.disableDnsResolver=true'",
+        "name": "run",
+        "type": "custom",
+        "attributes": {
+          "previewUrl": "${server.vertx}",
+          "goal": "Run"
+        }
+      }, {
+        "commandLine": "scl enable rh-maven33 'mvn compile vertx:debug -f ${current.project.path} -Dvertx.disableDnsResolver=true'",
+        "name": "debug",
+        "type": "custom",
+        "attributes": {
+          "previewUrl": "${server.vertx}",
+          "goal": "Debug"
+        }
+      }]
     },
     "stackIcon": {
       "name": "type-java.svg",
@@ -1084,425 +1261,299 @@
     }
   },
   {
-    "id": "java-debian",
-    "creator": "ide",
-    "name": "Java Debian",
-    "description": "Java JDK Stack on Debian.",
+    "id": "spring-boot",
+    "creator": "Gytis Trikleris",
+    "name": "Spring Boot",
+    "description": "Spring Boot Stack on CentOS.",
     "scope": "advanced",
     "tags": [
-      "Java",
-      "JDK",
-      "Maven",
-      "Tomcat",
-      "Debian",
-      "Git"
+      "Spring Boot"
     ],
     "components": [
       {
-        "name": "Debian",
-        "version": "jessie"
+        "name": "CentOS",
+        "version": "7"
       },
       {
-        "name": "JDK",
-        "version": "1.8.0_45"
+        "name": "OpenJDK",
+        "version": "1.8.0_161"
       },
       {
-        "name": "Maven",
-        "version": "3.2.2"
-      },
-      {
-        "name": "Tomcat",
-        "version": "8.0.24"
+        "name": "RH-Maven",
+        "version": "3.3.9"
       }
     ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/debian_jdk8"
-    },
     "workspaceConfig": {
+      "name": "default",
+      "defaultEnv": "default",
       "environments": {
         "default": {
+          "recipe": {
+            "content": "registry.centos.org/che-stacks/spring-boot",
+            "type": "dockerimage"
+          },
           "machines": {
             "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
+              "installers": [
+                "org.eclipse.che.exec",
+                "org.eclipse.che.terminal",
+                "org.eclipse.che.ws-agent"
               ],
-              "servers": {},
-              "attributes" : {
+              "servers": {
+                "springboot" : {
+                  "port" : "8080",
+                  "protocol" : "http"
+                },
+                "tomcat8-debug" : {
+                  "port" : "8000",
+                  "protocol" : "http"
+                }
+              },
+              "attributes": {
                 "memoryLimitBytes": "2147483648"
               }
             }
-          },
-          "recipe": {
-            "location": "codenvy/debian_jdk8",
-            "type": "dockerimage"
           }
         }
       },
-      "name": "default",
-      "defaultEnv": "default",
-      "description": null,
       "commands": [
         {
-          "commandLine": "mvn clean install -f ${current.project.path}",
+          "commandLine": "scl enable rh-maven33 'mvn install -f ${current.project.path}'",
           "name": "build",
-          "type": "mvn"
-        }
-      ]
-    },
-    "stackIcon": {
-      "name": "type-java.svg",
-      "mediaType": "image/svg+xml"
-    }
-  },
-  {
-    "id": "php-gae",
-    "creator": "ide",
-    "name": "PHP GAE",
-    "description": "Default PHP Stack with PHP 5.5 and PHP GAE SDK 1.9.37.",
-    "scope": "advanced",
-    "tags": [
-      "PHP-GAE"
-    ],
-    "components": [
-      {
-        "name": "PHP",
-        "version": "5.5.9"
-      },
-      {
-        "name": "Apache",
-        "version": "2"
-      },
-      {
-        "name": "GAE SDK",
-        "version": "1.9.37"
-      },
-      {
-        "name": "MySQL",
-        "version": "---"
-      },
-      {
-        "name": "Sqlite",
-        "version": "---"
-      },
-      {
-        "name": "dockerimager",
-        "version": "---"
-      }
-    ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/php:gae"
-    },
-    "workspaceConfig": {
-      "environments": {
-        "default": {
-          "machines": {
-            "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
-              ],
-              "servers": {},
-              "attributes" : {
-                "memoryLimitBytes": "2147483648"
-              }
-            }
-          },
-          "recipe": {
-            "location": "codenvy/php:gae",
-            "type": "dockerimage"
+          "type": "mvn",
+          "attributes": {
+            "previewUrl": "",
+            "goal": "Build"
           }
-        }
-      },
-      "name": "default",
-      "defaultEnv": "default",
-      "description": null,
-      "commands": [
+        },
         {
+          "commandLine": "scl enable rh-maven33 'mvn clean install -f ${current.project.path}'",
+          "name": "clean build",
+          "type": "mvn",
+          "attributes": {
+            "previewUrl": "",
+            "goal": "Build"
+          }
+        },
+        {
+          "commandLine": "scl enable rh-maven33 'mvn compile spring-boot:run -f ${current.project.path}'",
           "name": "run",
           "type": "custom",
-          "commandLine": "cd ${GAE} && ./dev_appserver.py 2>&1 --php_executable_path=/usr/bin/php5-cgi --skip_sdk_update_check true --host=0.0.0.0 --admin_host=0.0.0.0 ${current.project.path}",
           "attributes": {
-            "previewUrl": "http://${server.port.8080}"
+            "previewUrl": "${server.springboot}",
+            "goal": "Run"
           }
-        }
-      ]
-    },
-    "stackIcon": {
-      "name": "type-php.svg",
-      "mediaType": "image/svg+xml"
-    }
-  },
-  {
-    "id": "python-2.7",
-    "creator": "ide",
-    "name": "Python 2.7",
-    "description": "Default Python Stack with Python 2.7.11, pip 8.1.1.",
-    "scope": "advanced",
-    "tags": [
-      "Python 2.7",
-      "pip",
-      "Ubuntu",
-      "Git"
-    ],
-    "components": [
-      {
-        "name": "Python",
-        "version": "2.7.11"
-      },
-      {
-        "name": "pip",
-        "version": "8.1.1"
-      }
-    ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/ubuntu_python:2.7"
-    },
-    "workspaceConfig": {
-      "environments": {
-        "default": {
-          "machines": {
-            "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
-              ],
-              "servers": {},
-              "attributes" : {
-                "memoryLimitBytes": "2147483648"
-              }
-            }
-          },
-          "recipe": {
-            "location": "codenvy/ubuntu_python:2.7",
-            "type": "dockerimage"
-          }
-        }
-      },
-      "name": "default",
-      "defaultEnv": "default",
-      "description": null,
-      "commands": [
+        },
         {
-          "name": "run",
+          "commandLine": "scl enable rh-maven33 'mvn spring-boot:run -Drun.jvmArguments=\"-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005\" -f ${current.project.path}'",
+          "name": "debug",
           "type": "custom",
-          "commandLine": "cd ${current.project.path} && sudo virtualenv /env && sudo pip install -r requirements.txt && python main.py",
           "attributes": {
-            "previewUrl": "http://${server.port.8080}"
+            "previewUrl": "${server.springboot}",
+            "goal": "Debug"
           }
         }
       ]
     },
     "stackIcon": {
-      "name": "type-python.svg",
+      "name": "type-spring-boot.svg",
       "mediaType": "image/svg+xml"
     }
   },
   {
-    "id": "python-gae",
-    "creator": "ide",
-    "name": "Python GAE",
-    "description": "Default Python Stack with Python 2.7, Python GAE SDK 1.9.37.",
+    "name": "CentOS WildFly Swarm",
+    "id": "wildfly-swarm",
+    "creator": "Dharmit Shah",
+    "description": "Eclipse WildFly Swarm Stack on CentOS.",
     "scope": "advanced",
     "tags": [
-      "Python-GAE"
+      "WildFly Swarm"
     ],
     "components": [
       {
-        "name": "Python",
-        "version": "3.5.1"
+        "name": "CentOS",
+        "version": "7"
       },
       {
-        "name": "GAE SDK",
-        "version": "1.9.37"
+        "name": "OpenJDK",
+        "version": "1.8.0_161"
+      },
+      {
+        "name": "RH-Maven",
+        "version": "3.3.9"
       }
     ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/ubuntu_python:gae_python2.7"
-    },
     "workspaceConfig": {
+      "name": "default",
       "environments": {
         "default": {
+          "recipe": {
+            "content": "registry.centos.org/che-stacks/wildfly-swarm",
+            "type": "dockerimage"
+          },
           "machines": {
             "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
-              ],
-              "servers": {},
-              "attributes" : {
+              "attributes": {
                 "memoryLimitBytes": "2147483648"
+              },
+              "installers": [
+                "org.eclipse.che.exec",
+                "org.eclipse.che.terminal",
+                "org.eclipse.che.ws-agent"
+              ],
+              "servers": {
+                "wildfly" : {
+                  "port" : "8080",
+                  "protocol" : "http"
+                },
+                "tomcat8-debug" : {
+                  "port" : "8000",
+                  "protocol" : "http"
+                }
               }
             }
-          },
-          "recipe": {
-            "location": "codenvy/ubuntu_python:gae_python2.7",
-            "type": "dockerimage"
           }
         }
       },
-      "name": "default",
-      "defaultEnv": "default",
-      "description": null,
       "commands": [
         {
-          "name": "run",
-          "type": "custom",
-          "commandLine": "cd ${GAE} && ./dev_appserver.py 2>&1 --skip_sdk_update_check true --host=0.0.0.0 --admin_host=0.0.0.0 ${current.project.path}",
-          "attributes": {
-            "previewUrl": "http://${server.port.8080}"
-          }
-        }
-      ]
-    },
-    "stackIcon": {
-      "name": "type-python.svg",
-      "mediaType": "image/svg+xml"
-    }
-  },
-  {
-    "id": "selenium",
-    "creator": "ide",
-    "name": "Selenium",
-    "description": "Stack with Selenium and Chrome on Ubuntu.",
-    "scope": "advanced",
-    "tags": [
-      "Selenium",
-      "Ubuntu",
-      "Chrome",
-      "noVNC",
-      "xserver",
-      "blackbox",
-      "webdriver",
-      "x11vnc"
-    ],
-    "components": [
-      {
-        "name": "noVNC",
-        "version": "---"
-      },
-      {
-        "name": "Selenium webdriver",
-        "version": "---"
-      },
-      {
-        "name": "Google Chrome",
-        "version": "---"
-      },
-      {
-        "name": "Blackbox",
-        "version": "---"
-      },
-      {
-        "name": "Supervisor",
-        "version": "---"
-      }
-    ],
-    "source": {
-      "type": "image",
-      "origin": "codenvy/selenium"
-    },
-    "workspaceConfig": {
-      "environments": {
-        "default": {
-          "machines": {
-            "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
-              ],
-              "servers": {},
-              "attributes" : {
-                "memoryLimitBytes": "2147483648"
-              }
-            }
-          },
-          "recipe": {
-            "location": "codenvy/selenium",
-            "type": "dockerimage"
-          }
-        }
-      },
-      "name": "default",
-      "defaultEnv": "default",
-      "description": null
-    }
-  },
-  {
-    "id": "tomee-default",
-    "creator": "tomitribe",
-    "name": "TomEE",
-    "description": "Default Java Stack with JDK 8, Maven and Apache TomEE 1.7.3.",
-    "scope": "advanced",
-    "tags": [
-      "TomEE"
-    ],
-    "components": [
-      {
-        "name": "JDK",
-        "version": "1.8.0_45"
-      },
-      {
-        "name": "Maven",
-        "version": "3.2.2"
-      },
-      {
-        "name": "TomEE",
-        "version": "1.7.3"
-      }
-    ],
-    "source": {
-      "type": "image",
-      "origin": "tomitribe/ubuntu_tomee_173_jdk8"
-    },
-    "workspaceConfig": {
-      "environments": {
-        "default": {
-          "machines": {
-            "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
-              ],
-              "servers": {},
-              "attributes" : {
-                "memoryLimitBytes": "2147483648"
-              }
-            }
-          },
-          "recipe": {
-            "location": "tomitribe/ubuntu_tomee_173_jdk8",
-            "type": "dockerimage"
-          }
-        }
-      },
-      "name": "default",
-      "defaultEnv": "default",
-      "description": null,
-      "commands": [
-        {
-          "commandLine": "mvn clean install -f ${current.project.path}",
           "name": "build",
-          "type": "mvn"
+          "type": "mvn",
+          "attributes": {
+            "previewUrl": "",
+            "goal": "Build"
+          },
+          "commandLine": "export MAVEN_OPTS='-Xms20m'\nscl enable rh-maven33 'mvn clean install -f ${current.project.path} -DskipTests'"
+        },
+        {
+          "name": "run",
+          "type": "custom",
+          "attributes": {
+            "previewUrl": "${server.wildfly}",
+            "goal": "Run"
+          },
+          "commandLine": "cd ${current.project.path}\nscl enable rh-maven33 'java -jar target/*-swarm.jar -Djava.net.preferIPv4Stack=true'"
         }
-      ]
-    },
-    "stackIcon": {
-      "name": "type-java.svg",
-      "mediaType": "image/svg+xml"
+      ],
+      "projects": [],
+      "defaultEnv": "default",
+      "links": []
     }
   },
   {
-    "id": "ubuntu",
+    "name": "CentOS nodejs",
+    "id": "nodejs6",
+    "scope": "advanced",
+    "description": "CentOS Node Stack",
+    "tags": [
+      "CentOS",
+      "Git",
+      "Node.JS",
+      "NPM",
+      "Gulp",
+      "Bower",
+      "Grunt",
+      "Yeoman",
+      "Angular",
+      "Karma"
+    ],
+    "workspaceConfig": {
+      "name": "default",
+      "environments": {
+        "default": {
+          "recipe": {
+            "content": "registry.centos.org/che-stacks/centos-nodejs",
+            "type": "dockerimage"
+          },
+          "machines": {
+            "dev-machine": {
+              "attributes": {
+                "memoryLimitBytes": "2147483648"
+              },
+              "installers": [
+                "org.eclipse.che.exec",
+                "org.eclipse.che.terminal",
+                "org.eclipse.che.ws-agent"
+              ],
+              "servers": {
+                "angular": {
+                  "port": "8003",
+                  "protocol": "http"
+                },
+                "3000/tcp": {
+                  "port": "3000",
+                  "protocol": "http"
+                },
+                "9000/tcp": {
+                  "port": "9000",
+                  "protocol": "http"
+                },
+                "8080/tcp": {
+                  "port": "8080",
+                  "protocol": "http"
+                }
+              }
+            }
+          }
+        }
+      },
+      "commands": [
+        {
+          "name": "run",
+          "type": "custom",
+          "attributes": {
+            "goal": "Run",
+            "previewUrl": "${server.8080/tcp}"
+          },
+          "commandLine": "cd ${current.project.path} && scl enable rh-nodejs6 'node app.js'"
+        }
+      ],
+      "projects": [],
+      "defaultEnv": "default",
+      "links": []
+    },
+    "components": [
+      {
+        "name": "CentOS",
+        "version": "7"
+      },
+      {
+        "name": "OpenJDK",
+        "version": "1.8.0_161"
+      },
+      {
+        "name": "RH-Maven",
+        "version": "3.3.9"
+      },
+      {
+        "name": "NodeJS",
+        "version": "6.11.3"
+      },
+      {
+        "name": "NPM",
+        "version": "3.10.9"
+      }
+    ],
+    "creator": "ide"
+  },
+  {
+    "id": "kotlin-default",
     "creator": "ide",
-    "name": "Ubuntu",
-    "description": "Simple stack with Ubuntu (latest).",
+    "name": "Kotlin",
+    "description": "Ubuntu based stack with Kotlin 1.2.50-eap-62",
     "scope": "advanced",
     "tags": [
+      "Kotlin",
       "Ubuntu"
     ],
     "components": [
       {
         "name": "Ubuntu",
-        "version": "---"
+        "version": "16.04"
+      },
+      {
+        "name": "Kotlin",
+        "version": "1.2.50-eap-62"
       }
     ],
     "workspaceConfig": {
@@ -1510,8 +1561,8 @@
         "default": {
           "machines": {
             "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
+              "installers": [
+                "org.eclipse.che.exec", "org.eclipse.che.terminal", "org.eclipse.che.ws-agent"
               ],
               "servers": {},
               "attributes" : {
@@ -1520,7 +1571,7 @@
             }
           },
           "recipe": {
-            "location": "codenvy/ubuntu_jre",
+            "content": "eclipse/kotlin",
             "type": "dockerimage"
           }
         }
@@ -1528,66 +1579,49 @@
       "name": "default",
       "defaultEnv": "default",
       "description": null
-    },
-    "source": {
-      "type": "image",
-      "origin": "codenvy/ubuntu_jre"
-    }    
-  },
-  {
-    "id": "bitnami-express",
-    "creator": "Bitnami",
-    "name": "Bitnami Express",
-    "description": "Default Express stack with Node.js 6.4.0, Express 4.14.0, MongoDB 3.2.7.",
+    }
+},
+{
+    "id": "centos-go",
+    "creator": "ide",
+    "name": "CentOS Go",
+    "description": "CentOS based Go Stack",
     "scope": "advanced",
     "tags": [
-      "Ubuntu",
-      "Node.JS",
-      "NPM",
-      "Express"
+      "CentOS",
+      "Go"
     ],
     "components": [
       {
-        "name": "Node.JS",
-        "version": "6.4.0"
+        "name": "Centos",
+        "version": "7"
       },
       {
-        "name": "NPM",
-        "version": "---"
-      },
-      {
-        "name": "Express",
-        "version": "4.14.0"
-      },
-      {
-        "name": "MongoDB",
-        "version": "3.2.7"
-      },
-      {
-        "name": "Git",
-        "version": "---"
+        "name": "Golang",
+        "version": "1.9.4"
       }
     ],
-    "source": {
-      "type": "image",
-      "origin": "bitnami/che-express:che-4.14.0-r1"
-    },
     "workspaceConfig": {
       "environments": {
         "default": {
           "machines": {
             "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
+              "installers": [
+                "org.eclipse.che.exec", "org.eclipse.che.terminal", "org.eclipse.che.ws-agent"
               ],
-              "servers": {},
+              "servers": {
+                "8080/tcp" : {
+                  "port" : "8080",
+                  "protocol" : "http"
+                }
+              },
               "attributes" : {
                 "memoryLimitBytes": "2147483648"
               }
             }
           },
           "recipe": {
-            "location": "bitnami/che-express:che-4.14.0-r1",
+            "content": "registry.centos.org/che-stacks/centos-go",
             "type": "dockerimage"
           }
         }
@@ -1595,429 +1629,198 @@
       "name": "default",
       "defaultEnv": "default",
       "description": null,
-      "commands": []
+      "commands": [
+        {
+          "name": "run",
+          "type": "custom",
+          "commandLine": "cd ${current.project.path} && go get -d && go run main.go",
+          "attributes": {
+            "previewUrl": "${server.8080/tcp}",
+            "goal": "Run"
+          }
+        }
+      ]
     },
     "stackIcon": {
-      "name": "type-bitnami.svg",
+      "name": "type-go.svg",
       "mediaType": "image/svg+xml"
     }
   },
   {
-    "id": "bitnami-swift",
-    "creator": "Bitnami",
-    "name": "Bitnami Swift",
-    "description": "Default Swift stack with Swift 3.0-PREVIEW-6",
-    "scope": "advanced",
-    "tags": [
-      "Ubuntu",
-      "Swift"
-    ],
-    "components": [
-      {
-        "name": "Swift",
-        "version": "3.0-PREVIEW-6"
-      },
-      {
-        "name": "JDK",
-        "version": "1.8.0_91"
-      },
-      {
-        "name": "Python",
-        "version": "2.7.12rc1"
-      },
-      {
-        "name": "CLANG",
-        "version": "---"
-      },
-      {
-        "name": "libxml2",
-        "version": "---"
-      },
-      {
-        "name": "libedit2",
-        "version": "---"
-      },
-      {
-        "name": "libicu52",
-        "version": "---"
-      },
-      {
-        "name": "Git",
-        "version": "---"
-      }
-    ],
-    "source": {
-      "type": "image",
-      "origin": "bitnami/che-swift:che-3.0-PREVIEW-6-r2"
+  "id": "centos",
+  "creator": "ide",
+  "name": "CentOS blank",
+  "description": "CentOS Blank Stack",
+  "scope": "advanced",
+  "tags": [
+    "Blank",
+    "CentOS"
+  ],
+  "components": [
+    {
+      "name": "Centos",
+      "version": "7"
     },
-    "workspaceConfig": {
-      "environments": {
-        "default": {
-          "machines": {
-            "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
-              ],
-              "servers": {},
-              "attributes" : {
-                "memoryLimitBytes": "2147483648"
-              }
-            }
-          },
-          "recipe": {
-            "location": "bitnami/che-swift:che-3.0-PREVIEW-6-r2",
-            "type": "dockerimage"
-          }
-        }
-      },
-      "name": "default",
-      "defaultEnv": "default",
-      "description": null,
-      "commands": []
-    },
-    "stackIcon": {
-      "name": "type-bitnami.svg",
-      "mediaType": "image/svg+xml"
+    {
+      "name": "OpenJDK",
+      "version": "1.8.0_161"
     }
+  ],
+  "workspaceConfig": {
+    "environments": {
+      "default": {
+        "machines": {
+          "dev-machine": {
+            "installers": [
+              "org.eclipse.che.exec",
+              "org.eclipse.che.terminal",
+              "org.eclipse.che.ws-agent"
+            ],
+            "servers": {},
+            "attributes": {
+              "memoryLimitBytes": "2147483648"
+            }
+          }
+        },
+        "recipe": {
+          "content": "registry.centos.org/che-stacks/centos-stack-base",
+          "type": "dockerimage"
+        }
+      }
+    },
+    "name": "default",
+    "defaultEnv": "default",
+    "description": null
   },
+  "stackIcon": {
+    "name": "type-blank.svg",
+    "mediaType": "image/svg+xml"
+  }
+ },
   {
-    "id": "bitnami-laravel",
-    "creator": "Bitnami",
-    "name": "Bitnami Laravel",
-    "description": "Default Laravel stack with PHP 7.0.10, Laravel 5.2.31, MariaDB 10.1.14.",
+    "description": "Ceylon stack with Java, JavaScript and Dart backends on CentOS.",
+    "creator": "ide",
     "scope": "advanced",
-    "tags": [
-      "Ubuntu",
-      "Node.JS",
-      "Laravel",
-      "PHP",
-      "MariaDB"
-    ],
+    "name": "Ceylon with Java JavaScript Dart on CentOS",
+    "id": "ceylon-java-javascript-dart-centos",
     "components": [
       {
-        "name": "PHP",
-        "version": "7.0.10"
+        "name": "Centos",
+        "version": "7"
       },
       {
-        "name": "Laravel",
-        "version": "5.2.31"
-      },
-      {
-        "name": "MariaDB",
-        "version": "10.1.14"
-      },
-      {
-        "name": "Gulp",
-        "version": "---"
-      },
-      {
-        "name": "Git",
-        "version": "---"
+        "name": "Ceylon",
+        "version": "1.3.2"
       }
     ],
-    "source": {
-      "type": "image",
-      "origin": "bitnami/che-laravel:che-5.2.31-r5"
-    },
+    "tags": [
+      "Ceylon",
+      "Dart"
+    ],
     "workspaceConfig": {
+      "defaultEnv": "default",
       "environments": {
         "default": {
           "machines": {
             "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
-              ],
-              "servers": {},
-              "attributes" : {
+              "attributes": {
                 "memoryLimitBytes": "2147483648"
-              }
+              },
+              "servers": {
+                "tomcat8" : {
+                  "port" : "8080",
+                  "protocol" : "http"
+                },
+                "tomcat8-debug" : {
+                  "port" : "8000",
+                  "protocol" : "http"
+                }
+              },
+              "installers": [
+                "org.eclipse.che.exec",
+                "org.eclipse.che.terminal",
+                "org.eclipse.che.ws-agent",
+                "org.eclipse.che.ls.json"
+              ]
             }
           },
           "recipe": {
-            "location": "bitnami/che-laravel:che-5.2.31-r5",
+            "content": "registry.centos.org/che-stacks/centos-ceylon-nodejs-dart",
             "type": "dockerimage"
           }
         }
       },
+      "projects": [],
       "name": "default",
-      "defaultEnv": "default",
-      "description": null,
-      "commands": []
-    },
-    "stackIcon": {
-      "name": "type-bitnami.svg",
-      "mediaType": "image/svg+xml"
-    }
-  },
-  {
-    "id": "bitnami-rails",
-    "creator": "Bitnami",
-    "name": "Bitnami Rails",
-    "description": "Bitnami Rails stack with Ruby 2.3.1, Rails 5.0.0.1, MariaDB 10.1.14.",
-    "scope": "advanced",
-    "tags": [
-      "Ubuntu",
-      "BitnamiRails",
-      "MariaDB",
-      "Ruby"
-    ],
-    "components": [
-      {
-        "name": "MariaDb",
-        "version": "10.1.14"
-      },
-      {
-        "name": "Ruby",
-        "version": "2.3.1"
-      },
-      {
-        "name": "Rails",
-        "version": "5.0.0.1"
-      },
-      {
-        "name": "MySQL Client",
-        "version": "10.1.13"
-      },
-      {
-        "name": "Git",
-        "version": "---"
-      }
-    ],
-    "source": {
-      "type": "image",
-      "origin": "bitnami/che-rails:che-5.0.0.1-r0"
-    },
-    "workspaceConfig": {
-      "environments": {
-        "default": {
-          "machines": {
-            "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
-              ],
-              "servers": {},
-              "attributes" : {
-                "memoryLimitBytes": "2147483648"
-              }
-            }
+      "commands": [
+        {
+          "commandLine": "rm -Rf ${current.project.path}/modules ",
+          "name": "clean modules",
+          "attributes": {
+            "goal": "Build",
+            "previewUrl": ""
           },
-          "recipe": {
-            "location": "bitnami/che-rails:che-5.0.0.1-r0",
-            "type": "dockerimage"
-          }
-        }
-      },
-      "name": "default",
-      "defaultEnv": "default",
-      "description": null,
-      "commands": []
-    },
-    "stackIcon": {
-      "name": "type-bitnami.svg",
-      "mediaType": "image/svg+xml"
-    }
-  },
-  {
-    "id": "bitnami-codeigniter",
-    "creator": "Bitnami",
-    "name": "Bitnami Codeigniter",
-    "description": "Default CodeIgniter stack with PHP 7.0.10, CodeIgniter 3.1.0, MariaDB 10.1.14.",
-    "scope": "advanced",
-    "tags": [
-      "Ubuntu",
-      "CodeIgniter",
-      "MariaDB",
-      "PHP"
-    ],
-    "components": [
-      {
-        "name": "PHP",
-        "version": "7.0.10"
-      },
-      {
-        "name": "Codeigniter",
-        "version": "3.1.0"
-      },
-      {
-        "name": "MariaDB",
-        "version": "10.1.14"
-      },
-      {
-        "name": "MySQL Client",
-        "version": "10.1.13"
-      },
-      {
-        "name": "Git",
-        "version": "---"
-      }
-    ],
-    "source": {
-      "type": "image",
-      "origin": "bitnami/che-codeigniter:che-3.1.0-r2"
-    },
-    "workspaceConfig": {
-      "environments": {
-        "default": {
-          "machines": {
-            "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
-              ],
-              "servers": {},
-              "attributes" : {
-                "memoryLimitBytes": "2147483648"
-              }
-            }
+          "type": "custom"
+        },
+        {
+          "commandLine": "cd ${current.project.path} && ceylon compile",
+          "name": "compile for JVM",
+          "attributes": {
+            "goal": "Build",
+            "previewUrl": ""
           },
-          "recipe": {
-            "location": "bitnami/che-codeigniter:che-3.1.0-r2",
-            "type": "dockerimage"
-          }
-        }
-      },
-      "name": "default",
-      "defaultEnv": "default",
-      "description": null,
-      "commands": []
-    },
-    "stackIcon": {
-      "name": "type-bitnami.svg",
-      "mediaType": "image/svg+xml"
-    }
-  },
-  {
-    "id": "bitnami-symfony",
-    "creator": "Bitnami",
-    "name": "Bitnami Symfony",
-    "description": "Default Symfony stack with PHP 7.0.10, Symfony 3.1.3, MariaDB 10.1.14.",
-    "scope": "advanced",
-    "tags": [
-      "Ubuntu",
-      "Symfony",
-      "PHP",
-      "MariaDB"
-    ],
-    "components": [
-      {
-        "name": "PHP",
-        "version": "7.0.10"
-      },
-      {
-        "name": "Symfony",
-        "version": "3.1.3"
-      },
-      {
-        "name": "MariaDB",
-        "version": "10.1.14"
-      },
-      {
-        "name": "MySQL Client",
-        "version": "10.1.13"
-      },
-      {
-        "name": "Git",
-        "version": "---"
-      }
-    ],
-    "source": {
-      "type": "image",
-      "origin": "bitnami/che-symfony:che-3.1.3-r0"
-    },
-    "workspaceConfig": {
-      "environments": {
-        "default": {
-          "machines": {
-            "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
-              ],
-              "servers": {},
-              "attributes" : {
-                "memoryLimitBytes": "2147483648"
-              }
-            }
+          "type": "custom"
+        },
+        {
+          "commandLine": "cd ${current.project.path} && ceylon compile-js",
+          "name": "compile for JS",
+          "attributes": {
+            "goal": "Build",
+            "previewUrl": ""
           },
-          "recipe": {
-            "location": "bitnami/che-symfony:che-3.1.3-r0",
-            "type": "dockerimage"
-          }
-        }
-      },
-      "name": "default",
-      "defaultEnv": "default",
-      "description": null,
-      "commands": []
-    },
-    "stackIcon": {
-      "name": "type-bitnami.svg",
-      "mediaType": "image/svg+xml"
-    }
-  },
-  {
-    "id": "bitnami-java-play",
-    "creator": "Bitnami",
-    "name": "Bitnami Play for Java",
-    "description": "Default Play stack with OpenJDK 1.8.0 and Play 2.55.",
-    "scope": "advanced",
-    "tags": [
-      "Ubuntu",
-      "Activator",
-      "Play",
-      "Java"
-    ],
-    "components": [
-      {
-        "name": "OpenJDK",
-        "version": "1.8.0"
-      },
-      {
-        "name": "Play",
-        "version": "2.55"
-      },
-      {
-        "name": "Node",
-        "version": "6.4.0"
-      },
-      {
-        "name": "Activator",
-        "version": "1.13.10"
-      },
-      {
-        "name": "Git",
-        "version": "---"
-      }
-    ],
-    "source": {
-      "type": "image",
-      "origin": "bitnami/che-java-play:che-2.55-r3"
-    },
-    "workspaceConfig": {
-      "environments": {
-        "default": {
-          "machines": {
-            "dev-machine": {
-              "agents": [
-                "org.eclipse.che.terminal", "org.eclipse.che.ws-agent", "org.eclipse.che.ssh"
-              ],
-              "servers": {},
-              "attributes" : {
-                "memoryLimitBytes": "2147483648"
-              }
-            }
+          "type": "custom"
+        },
+        {
+          "commandLine": "cd ${current.project.path} && ceylon compile-dart",
+          "name": "compile for Dart",
+          "attributes": {
+            "goal": "Build",
+            "previewUrl": ""
           },
-          "recipe": {
-            "location": "bitnami/che-java-play:che-2.55-r3",
-            "type": "dockerimage"
-          }
+          "type": "custom"
+        },
+        {
+          "commandLine": "cd ${current.project.path} && ceylon run",
+          "name": "Run on JVM",
+          "attributes": {
+            "goal": "Run",
+            "previewUrl": ""
+          },
+          "type": "custom"
+        },
+        {
+          "commandLine": "cd ${current.project.path} && ceylon run-js",
+          "name": "Run on NodeJS",
+          "attributes": {
+            "goal": "Run",
+            "previewUrl": ""
+          },
+          "type": "custom"
+        },
+        {
+          "commandLine": "cd ${current.project.path} && ceylon run-dart $(ceylon config get runtool.module)",
+          "name": "Run on Dart",
+          "attributes": {
+            "goal": "Run",
+            "previewUrl": ""
+          },
+          "type": "custom"
         }
-      },
-      "name": "default",
-      "defaultEnv": "default",
-      "description": null,
-      "commands": []
+      ],
+      "links": []
     },
     "stackIcon": {
-      "name": "type-bitnami.svg",
+      "name": "type-ceylon.svg",
       "mediaType": "image/svg+xml"
     }
   }

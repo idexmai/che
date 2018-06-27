@@ -1,14 +1,33 @@
 /*
- * Copyright (c) 2015-2016 Codenvy, S.A.
+ * Copyright (c) 2015-2018 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ *   Red Hat, Inc. - initial API and implementation
  */
 'use strict';
+
+interface ICheToolbarAttributes extends ng.IAttributes {
+  cheTitle: string;
+  cheTitleIconsController: any;
+  cheButtonHref: string;
+  cheButtonHrefTarget: string;
+  cheButtonName: string;
+  cheButtonIcon: string;
+  cheAddButtonName: string;
+  cheButtonOnClick: Function;
+  cheButtonDisabled: boolean;
+  cheAddButtonHref: string;
+  cheBreadcrumbTitle: string;
+  cheBreadcrumbHref: string;
+  cheSearchPlaceholder: string;
+  cheSearchModel: any;
+  cheDropdownMenu: any;
+  theme: string;
+}
 
 /**
  * @ngdoc directive
@@ -33,89 +52,89 @@
  *   <che-toolbar che-title="hello"></che-toolbar>
  *
  * @example
- <example module="userDashboard">
- <file name="index.html">
- <che-toolbar che-title="Hello"
-               che-button-name="My Button"
-               che-button-href="http://www.eclipse.org/che"
-               che-breadcrumb-title="My Breadcrumb"
-               che-breadcrumb-href="http://www.eclipse.org/che"
-               che-subheader-title="subtitle"
- ></che-toolbar>
- </file>
- </example>
+ * <example module="userDashboard">
+ *   <file name="index.html">
+ *     <che-toolbar che-title="Hello"
+ *     che-button-name="My Button"
+ *     che-button-href="http://www.eclipse.org/che"
+ *     che-breadcrumb-title="My Breadcrumb"
+ *     che-breadcrumb-href="http://www.eclipse.org/che"
+ *     che-subheader-title="subtitle"
+ *     ></che-toolbar>
+ *   </file>
+ * </example>
  * @author Florent Benoit
  */
 export class CheToolbar {
+  restrict: string;
+  replace: boolean;
+  transclude: boolean;
 
   /**
    * Default constructor that is using resource
-   * @ngInject for Dependency injection
    */
-  constructor () {
-    this.restrict='E';
+  constructor() {
+    this.restrict = 'E';
     this.replace = true;
-    this.controller = 'CheNavBarCtrl';
-    this.controllerAs = 'controller';
-    this.bindToController = true;
-    this.transclude= true;
-
+    this.transclude = true;
   }
 
   /**
    * Template for the current toolbar
-   * @param element
-   * @param attrs
+   * @param $element
+   * @param $attrs
    * @returns {string} the template
    */
-  template( element, attrs) {
-    var title = attrs.cheTitle;
-    var titleController  = attrs.cheTitleIconsController;
-    var buttonHref = attrs.cheButtonHref;
-    var buttonHrefTarget = attrs.cheButtonHrefTarget;
-    var buttonName = attrs.cheButtonName;
-    var buttonIcon = attrs.cheButtonIcon;
-    var addButtonName = attrs.cheAddButtonName;
-    var addButtonHref = attrs.cheAddButtonHref;
+  template($element: ng.IAugmentedJQuery, $attrs: ICheToolbarAttributes): string {
+    const title = $attrs.cheTitle;
+    const titleController = $attrs.cheTitleIconsController;
+    const buttonHref = $attrs.cheButtonHref;
+    const buttonHrefTarget = $attrs.cheButtonHrefTarget;
+    const buttonName = $attrs.cheButtonName;
+    const buttonIcon = $attrs.cheButtonIcon;
+    const addButtonName = $attrs.cheAddButtonName;
+    const buttonOnClick = $attrs.cheButtonOnClick;
+    const buttonDisabled = $attrs.cheButtonDisabled;
+    const addButtonHref = $attrs.cheAddButtonHref;
 
-    var breadcrumbTitle = attrs.cheBreadcrumbTitle;
-    var breadcrumbHref = attrs.cheBreadcrumbHref;
+    const breadcrumbTitle = $attrs.cheBreadcrumbTitle;
+    const breadcrumbHref = $attrs.cheBreadcrumbHref;
 
-    var searchPlaceholder = attrs.cheSearchPlaceholder;
-    var searchModel = attrs.cheSearchModel;
+    const searchPlaceholder = $attrs.cheSearchPlaceholder;
+    const searchModel = $attrs.cheSearchModel;
 
-    var dropdownMenu = attrs.cheDropdownMenu;
-    var id = title.replace(/[\W\s]/g, '_');
-    var theme = attrs.theme;
+    const dropdownMenu = $attrs.cheDropdownMenu;
+    const id = title.replace(/[\W\s]/g, '_');
+    let theme = $attrs.theme;
 
     if (!theme) {
       theme = 'toolbar-theme';
     }
 
-    var template = '<div class=\"che-toolbar\"><md-toolbar md-theme=\"' + theme +'\">\n'
+    let template = '<div class=\"che-toolbar\"><md-toolbar md-theme=\"' + theme + '\">\n'
       + '<div layout=\"row\" layout-align=\"start center\" flex>';
 
     if (breadcrumbHref) {
       template += '<a class=\"che-toolbar-control-button che-toolbar-breadcrumb\" href=\"' + breadcrumbHref
-      + '\" title=\"' + breadcrumbTitle + '\">'
-      + '<md-icon md-font-icon=\"fa fa-chevron-left\"></md-icon>'
-      + '</a>';
+        + '\" title=\"' + breadcrumbTitle + '\">'
+        + '<md-icon md-font-icon=\"fa fa-chevron-left\"></md-icon>'
+        + '</a>';
     }
 
     template += '<div layout=\"row\" flex layout-align=\"start center\" class=\"che-toolbar-header\">'
-    + '<div class=\"che-toolbar-title\" id=\"'+ id +'\" flex layout=\"row\" layout-align=\"center center\">'
-    + '<span class=\"che-toolbar-title-label\">'
-    + title + '</span><span class=\"che-toolbar-title-icons\">';
+      + '<div class=\"che-toolbar-title\" id=\"' + id + '\" flex layout=\"row\" layout-align=\"center center\">'
+      + '<span class=\"che-toolbar-title-label\">'
+      + title + '</span><span class=\"che-toolbar-title-icons\">';
 
     if (titleController) {
       template = template
-      + '<md-icon ng-repeat=\"icon in ' + titleController + '.toolbarIcons\" md-font-icon=\"{{icon.font}}\" ng-click=\"'
-      + titleController + '.callbackToolbarClick(icon.name)\"';
+        + '<md-icon ng-repeat=\"icon in ' + titleController + '.toolbarIcons\" md-font-icon=\"{{icon.font}}\" ng-click=\"'
+        + titleController + '.callbackToolbarClick(icon.name)\"';
     }
     template += '</span></div>';
 
     if (searchModel) {
-      template += '<che-search che-placeholder=\"' + searchPlaceholder+ '\" ng-model=\"' + searchModel + '\" che-replace-element=\"' + id + '\"></che-search>';
+      template += '<che-search che-placeholder=\"' + searchPlaceholder + '\" ng-model=\"' + searchModel + '\" che-replace-element=\"' + id + '\"></che-search>';
     }
 
     template += '<div layout=\"row\" layout-align=\"start center\">';
@@ -132,10 +151,18 @@ export class CheToolbar {
     if (buttonName) {
       template += '<che-button-default class=\"che-toolbar-open-button\"';
       template += ' che-button-title=\"' + buttonName + '\"';
+      if (buttonDisabled) {
+        template += ' ng-disabled=\"' + buttonDisabled + '\"';
+      }
+      if (buttonOnClick) {
+        template += ' ng-click=\"' + buttonOnClick + '\"';
+      }
       if (buttonIcon) {
         template += ' che-button-icon=\"' + buttonIcon + '\"';
       }
-      template += ' href=\"' + buttonHref + '\"';
+      if (buttonHref) {
+        template += ' href=\"' + buttonHref + '\"';
+      }
       if (buttonHrefTarget) {
         template = template + ' target=\"' + buttonHrefTarget + '\"';
       }
@@ -150,7 +177,7 @@ export class CheToolbar {
     template += '<ng-transclude></ng-transclude>';
     template += '</div></div>';
     template += '</div>'
-    + '</md-toolbar></div>';
+      + '</md-toolbar></div>';
 
     return template;
   }

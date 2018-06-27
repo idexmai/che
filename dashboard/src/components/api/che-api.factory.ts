@@ -1,14 +1,26 @@
 /*
- * Copyright (c) 2015-2016 Codenvy, S.A.
+ * Copyright (c) 2015-2018 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ *   Red Hat, Inc. - initial API and implementation
  */
 'use strict';
+import {CheSsh} from './che-ssh.factory';
+import {CheWorkspace} from './workspace/che-workspace.factory';
+import {CheProfile} from './che-profile.factory';
+import {CheFactory} from './che-factory.factory';
+import {CheFactoryTemplate} from './che-factory-template.factory';
+import {ChePreferences} from './che-preferences.factory';
+import {CheProjectTemplate} from './che-project-template.factory';
+import {CheService} from './che-service.factory';
+import {CheStack} from './che-stack.factory';
+import {CheOAuthProvider} from './che-o-auth-provider.factory';
+import {CheAgent} from './che-agent.factory';
+import {CheUser} from './che-user.factory';
 
 
 /**
@@ -18,131 +30,159 @@
  */
 export class CheAPI {
 
+  static $inject = ['cheWorkspace', 'cheFactory', 'cheFactoryTemplate',
+               'cheProfile', 'chePreferences', 'cheProjectTemplate',
+              'cheService', 'cheStack', 'cheOAuthProvider', 'cheAgent',
+            'cheSsh', 'cheUser', 'chePermissions', 'cheOrganization'];
+
+  private cheWorkspace: CheWorkspace;
+  private cheProfile: CheProfile;
+  private chePreferences: ChePreferences;
+  private cheProjectTemplate: CheProjectTemplate;
+  private cheFactory: CheFactory;
+  private cheFactoryTemplate: CheFactoryTemplate;
+  private cheService: CheService;
+  private cheStack: CheStack;
+  private cheOAuthProvider: CheOAuthProvider;
+  private cheAgent: CheAgent;
+  private cheSsh: CheSsh;
+  private cheUser: CheUser;
+  private chePermissions: che.api.IChePermissions;
+  private cheOrganization: che.api.ICheOrganization;
+
   /**
    * Default constructor that is using resource
-   * @ngInject for Dependency injection
    */
-  constructor(cheWorkspace, cheProfile, chePreferences, cheProjectTemplate, cheWebsocket, cheService,
-              cheAdminPlugins, cheAdminService, cheRecipe, cheRecipeTemplate, cheStack, cheOAuthProvider, cheAgent) {
+  constructor(cheWorkspace: CheWorkspace, cheFactory: CheFactory, cheFactoryTemplate: CheFactoryTemplate,
+              cheProfile: CheProfile, chePreferences: ChePreferences, cheProjectTemplate: CheProjectTemplate,
+              cheService: CheService, cheStack: CheStack, cheOAuthProvider: CheOAuthProvider, cheAgent: CheAgent,
+              cheSsh: CheSsh, cheUser: CheUser, chePermissions: che.api.IChePermissions, cheOrganization: che.api.ICheOrganization) {
     this.cheWorkspace = cheWorkspace;
     this.cheProfile = cheProfile;
+    this.cheFactory = cheFactory;
+    this.cheFactoryTemplate = cheFactoryTemplate;
     this.chePreferences = chePreferences;
     this.cheProjectTemplate = cheProjectTemplate;
-    this.cheWebsocket = cheWebsocket;
     this.cheService = cheService;
-    this.cheAdminPlugins = cheAdminPlugins;
-    this.cheAdminService = cheAdminService;
-    this.cheRecipe = cheRecipe;
-    this.cheRecipeTemplate = cheRecipeTemplate;
     this.cheStack = cheStack;
     this.cheOAuthProvider = cheOAuthProvider;
     this.cheAgent = cheAgent;
+    this.cheSsh = cheSsh;
+    this.cheUser = cheUser;
+    this.chePermissions = chePermissions;
+    this.cheOrganization = cheOrganization;
   }
-
 
   /**
    * The Che Workspace API
-   * @returns {CheAPI.cheWorkspace|*}
+   * @returns {CheAPI.cheWorkspace}
    */
-  getWorkspace() {
+  getWorkspace(): CheWorkspace {
     return this.cheWorkspace;
   }
 
   /**
    * The Che oAuth Provider API
-   * @returns {CheOAuthProvider|*}
+   * @returns {CheOAuthProvider}
    */
-  getOAuthProvider() {
+  getOAuthProvider(): CheOAuthProvider {
     return this.cheOAuthProvider;
   }
 
   /**
    * The Che Profile API
-   * @returns {CheProfile|*}
+   * @returns {CheProfile}
    */
-  getProfile() {
+  getProfile(): CheProfile {
     return this.cheProfile;
   }
 
   /**
    * The Che Preferences API
-   * @returns {ChePreferences|*}
+   * @returns {ChePreferences}
    */
-  getPreferences() {
+  getPreferences(): ChePreferences {
     return this.chePreferences;
   }
 
   /**
    * The Che Project Template API
-   * @returns {CheProjectTemplate|*}
+   * @returns {CheProjectTemplate}
    */
-  getProjectTemplate() {
+  getProjectTemplate(): CheProjectTemplate {
     return this.cheProjectTemplate;
   }
 
   /**
-   * The Che Websocket API
-   * @returns {CheWebsocket|*}
-   */
-  getWebsocket() {
-    return this.cheWebsocket;
-  }
-
-  /**
    * The Che Services API
-   * @returns {CheService|*}
+   * @returns {CheService}
    */
-  getService() {
+  getService(): CheService {
     return this.cheService;
   }
 
   /**
-   * The Che Admin Services API
-   * @returns {CheAdminService|*}
-   */
-  getAdminService() {
-    return this.cheAdminService;
-  }
-
-
-  /**
-   * The Che Admin plugins API
-   * @returns {CheAdminPlugins|*}
-   */
-  getAdminPlugins() {
-    return this.cheAdminPlugins;
-  }
-
-  /**
-   * The Che Recipe API
-   * @returns {CheRecipe|*}
-   */
-  getRecipe() {
-    return this.cheRecipe;
-  }
-
-  /**
-   * The Che Recipe Template API
-   * @returns {CheRecipeTemplate|*}
-   */
-  getRecipeTemplate() {
-    return this.cheRecipeTemplate;
-  }
-
-  /**
    * The Che Stack API
-   * @returns {CheAPI.cheStack|*}
+   * @returns {CheStack}
    */
-  getStack() {
+  getStack(): CheStack {
     return this.cheStack;
   }
 
   /**
    * The Che Agent API
-   * @returns {CheAPI.cheAgent|*}
+   * @returns {CheAgent}
    */
-  getAgent() {
+  getAgent(): CheAgent {
     return this.cheAgent;
   }
 
+  /**
+   * Gets Che ssh API
+   * @returns {CheSsh}
+   */
+  getSsh(): CheSsh {
+    return this.cheSsh;
+  }
+
+  /**
+   * The Che Factory API
+   * @returns {CheFactory|*}
+   */
+  getFactory(): CheFactory {
+    return this.cheFactory;
+  }
+
+  /**
+   * The Che Factory Template API
+   * @returns {CheFactoryTemplate|*}
+   */
+  getFactoryTemplate(): CheFactoryTemplate {
+    return this.cheFactoryTemplate;
+  }
+
+  /**
+   * The Che use API.
+   *
+   * @returns {CheUser}
+   */
+  getUser(): CheUser {
+    return this.cheUser;
+  }
+
+  /**
+   * The Che Permissions API
+   * @returns {che.api.IChePermissions|*}
+   */
+  getPermissions(): che.api.IChePermissions {
+    return this.chePermissions;
+  }
+
+  /**
+   * The Che Organization API
+   * @return {che.api.ICheOrganization}
+   */
+  getOrganization(): che.api.ICheOrganization {
+    return this.cheOrganization;
+  }
 }

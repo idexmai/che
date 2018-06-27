@@ -1,26 +1,20 @@
 <!--
 
-    Copyright (c) 2015 Codenvy, S.A.
+    Copyright (c) 2015-2018 Red Hat, Inc.
     All rights reserved. This program and the accompanying materials
     are made available under the terms of the Eclipse Public License v1.0
     which accompanies this distribution, and is available at
     http://www.eclipse.org/legal/epl-v10.html
 
     Contributors:
-      Codenvy, S.A. - initial API and implementation
+      Red Hat, Inc. - initial API and implementation
 
 -->
 
 <div flex class="open-ide-page" md-theme="maincontent-theme">
   <div class="ide-page-loader"
        layout="column" layout-align="center center">
-    <div ng-hide="ideCtrl.selectedWorkspace">No workspace selected. Unable to open IDE</div>
-    <div layout="column" class="ide-page-loader-content" ng-show="ideCtrl.selectedWorkspace">
-      <div class="spinner">
-        <div class="rect1"></div>
-        <div class="rect2"></div>
-        <div class="rect3"></div>
-      </div>
-    </div>
+    <div ng-hide="ideCtrl.selectedWorkspaceExists">Workspace doesn't exist, unable to open IDE.</div>
+    <div class="ide-frame-loader" ng-show="ideCtrl.selectedWorkspaceExists" />
   </div>
 </div>

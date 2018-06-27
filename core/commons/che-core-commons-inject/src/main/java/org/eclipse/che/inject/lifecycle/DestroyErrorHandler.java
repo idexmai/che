@@ -1,14 +1,16 @@
-/*******************************************************************************
- * Copyright (c) 2012-2016 Codenvy, S.A.
+/*
+ * Copyright (c) 2012-2018 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
- *******************************************************************************/
+ *   Red Hat, Inc. - initial API and implementation
+ */
 package org.eclipse.che.inject.lifecycle;
+
+import static org.slf4j.LoggerFactory.getLogger;
 
 import java.lang.reflect.Method;
 
@@ -18,15 +20,9 @@ import java.lang.reflect.Method;
  * @author andrew00x
  */
 public interface DestroyErrorHandler {
-    void onError(Object instance, Method method, Throwable error);
+  void onError(Object instance, Method method, Throwable error);
 
-    /**
-     * Implementation of DestroyErrorHandler that ignore errors, e.g. such behaviour is required for annotation {@link
-     * javax.annotation.PreDestroy}.
-     */
-    DestroyErrorHandler DUMMY = new DestroyErrorHandler() {
-        @Override
-        public void onError(Object instance, Method method, Throwable error) {
-        }
-    };
+  /** Implementation of DestroyErrorHandler that log errors. */
+  DestroyErrorHandler LOG_HANDLER =
+      (instance, method, error) -> getLogger(instance.getClass()).error(error.getMessage(), error);
 }

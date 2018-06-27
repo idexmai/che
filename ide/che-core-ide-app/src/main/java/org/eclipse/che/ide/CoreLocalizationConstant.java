@@ -1,836 +1,1336 @@
-/*******************************************************************************
- * Copyright (c) 2012-2016 Codenvy, S.A.
+/*
+ * Copyright (c) 2012-2018 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
- *******************************************************************************/
+ *   Red Hat, Inc. - initial API and implementation
+ */
 package org.eclipse.che.ide;
 
 import com.google.gwt.i18n.client.Messages;
 
 /** @author Andrey Plotnikov */
 public interface CoreLocalizationConstant extends Messages {
-    @Key("createProjectFromTemplate.nameField")
-    String createProjectFromTemplateName();
+  @Key("createProjectFromTemplate.nameField")
+  String createProjectFromTemplateName();
 
-    @Key("createProjectFromTemplate.project.exists")
-    String createProjectFromTemplateProjectExists(String projectName);
+  @Key("createProjectFromTemplate.project.exists")
+  String createProjectFromTemplateProjectExists(String projectName);
 
-    @Key("extension.title")
-    String extensionTitle();
+  @Key("extension.title")
+  String extensionTitle();
 
-    @Key("extension.category")
-    String extensionCategory();
+  @Key("extension.category")
+  String extensionCategory();
 
-    @Key("action.navigateToFile.text")
-    String actionNavigateToFileText();
+  @Key("action.revealResource.text")
+  String actionRevealResourceText();
 
-    @Key("action.navigateToFile.description")
-    String actionNavigateToFileDescription();
+  @Key("action.revealResource.description")
+  String actionRevealResourceDescription();
 
-    @Key("navigateToFile.view.title")
-    String navigateToFileViewTitle();
+  @Key("action.navigateToFile.text")
+  String actionNavigateToFileText();
 
-    @Key("navigateToFile.view.file.field.title")
-    String navigateToFileViewFileFieldTitle();
+  @Key("action.navigateToFile.description")
+  String actionNavigateToFileDescription();
 
-    @Key("navigateToFile.view.file.field.prompt")
-    String navigateToFileViewFileFieldPrompt();
+  @Key("navigateToFile.view.title")
+  String navigateToFileViewTitle();
 
-    @Key("navigateToFile.searchIsCaseSensitive")
-    String navigateToFileSearchIsCaseSensitive();
+  @Key("navigateToFile.view.file.field.title")
+  String navigateToFileViewFileFieldTitle();
 
-    @Key("appearance.title")
-    String appearanceTitle();
+  @Key("navigateToFile.view.file.field.prompt")
+  String navigateToFileViewFileFieldPrompt();
 
-    @Key("appearance.category")
-    String appearanceCategory();
+  @Key("navigateToFile.searchIsCaseSensitive")
+  String navigateToFileSearchIsCaseSensitive();
 
-    /* DeleteItem */
-    @Key("action.delete.text")
-    String deleteItemActionText();
+  @Key("general.title")
+  String generalTitle();
 
-    @Key("action.delete.description")
-    String deleteItemActionDescription();
+  @Key("general.category")
+  String generalCategory();
 
-    /* Cut */
-    @Key("action.cut.text")
-    String cutItemsActionText();
+  /* Add resources to File Watcher excludes */
+  @Key("action.fileWatcher.add.excludes.text")
+  String addToFileWatcherExludesName();
 
-    @Key("action.cut.description")
-    String cutItemsActionDescription();
+  @Key("action.fileWatcher.add.excludes.description")
+  String addToFileWatcherExludesDescription();
 
-    /* Copy */
-    @Key("action.copy.text")
-    String copyItemsActionText();
+  /* Remove resources from File Watcher excludes */
+  @Key("action.fileWatcher.remove.excludes.text")
+  String removeFromFileWatcherExludesName();
 
-    @Key("action.copy.description")
-    String copyItemsActionDescription();
+  @Key("action.fileWatcher.remove.excludes.description")
+  String removeFromFileWatcherExludesDescription();
 
-    /* Paste */
-    @Key("action.paste.text")
-    String pasteItemsActionText();
+  /* DeleteItem */
+  @Key("action.delete.text")
+  String deleteItemActionText();
 
-    @Key("action.paste.description")
-    String pasteItemsActionDescription();
+  @Key("action.delete.description")
+  String deleteItemActionDescription();
 
-    @Key("action.export.text")
-    String exportConfigText();
+  @Key("action.goInto.text")
+  String goIntoActionText();
 
-    @Key("deleteDialogTitle")
-    String deleteDialogTitle();
+  @Key("action.goBack.text")
+  String goBackActionText();
 
-    @Key("deleteAddToIndexDialogTitle")
-    String deleteAddToIndexDialogTitle();
+  /* Cut */
+  @Key("action.cut.text")
+  String cutItemsActionText();
 
-    @Key("deleteAddToIndexDialogText")
-    String deleteAddToIndexDialogText();
+  @Key("action.cut.description")
+  String cutItemsActionDescription();
 
-    @Key("deleteAddToIndexIndexFailedToUpdate")
-    String deleteAddToIndexIndexFailedToUpdate();
+  /* Copy */
+  @Key("action.copy.text")
+  String copyItemsActionText();
 
-    @Key("deleteAddToIndexIndexUpdated")
-    String deleteAddToIndexIndexUpdated();
+  @Key("action.copy.description")
+  String copyItemsActionDescription();
 
-    @Key("deleteAddToIndexDialogNotification")
-    String deleteAddToIndexDialogNotification();
+  /* Paste */
+  @Key("action.paste.text")
+  String pasteItemsActionText();
 
-    @Key("deleteAllFilesAndSubdirectories")
-    String deleteAllFilesAndSubdirectories(String name);
+  @Key("action.paste.description")
+  String pasteItemsActionDescription();
 
-    @Key("deleteFilesAndSubdirectoriesInTheSelectedDirectory")
-    String deleteFilesAndSubdirectoriesInTheSelectedDirectory();
+  @Key("action.export.text")
+  String exportConfigText();
 
-    @Key("mixedProjectDeleteMessage")
-    String mixedProjectDeleteMessage();
+  @Key("deleteDialogTitle")
+  String deleteDialogTitle();
 
-    /* RenameItem */
-    @Key("action.rename.text")
-    String renameItemActionText();
+  @Key("deleteAddToIndexDialogTitle")
+  String deleteAddToIndexDialogTitle();
 
-    @Key("action.rename.description")
-    String renameItemActionDescription();
+  @Key("deleteAddToIndexDialogText")
+  String deleteAddToIndexDialogText();
 
-    @Key("renameNodeDialogTitle")
-    String renameNodeDialogTitle();
+  @Key("deleteAddToIndexIndexFailedToUpdate")
+  String deleteAddToIndexIndexFailedToUpdate();
 
-    @Key("renameFileDialogTitle")
-    String renameFileDialogTitle(String name);
+  @Key("deleteAddToIndexIndexUpdated")
+  String deleteAddToIndexIndexUpdated();
 
-    @Key("renameFolderDialogTitle")
-    String renameFolderDialogTitle(String name);
+  @Key("deleteAddToIndexDialogNotification")
+  String deleteAddToIndexDialogNotification();
 
-    @Key("renameProjectDialogTitle")
-    String renameProjectDialogTitle(String name);
+  @Key("deleteAllFilesAndSubdirectories")
+  String deleteAllFilesAndSubdirectories(String name);
 
-    @Key("renameDialogNewNameLabel")
-    String renameDialogNewNameLabel();
+  @Key("deleteFilesAndSubdirectoriesInTheSelectedDirectory")
+  String deleteFilesAndSubdirectoriesInTheSelectedDirectory();
 
-    @Key("createProjectFromTemplate.descriptionField")
-    String createProjectFromTemplateDescription();
+  @Key("mixedProjectDeleteMessage")
+  String mixedProjectDeleteMessage();
 
-    @Key("createProjectFromTemplate.projectPrivacy")
-    String createProjectFromTemplateProjectPrivacy();
+  @Key("action.switch.editor.displaying.title")
+  String switchEditorDisplayingTitle();
 
-    @Key("createProjectFromTemplate.public")
-    String createProjectFromTemplatePublic();
+  @Key("action.switch.editor.displaying.description")
+  String switchEditorDisplayingDescription();
 
-    @Key("createProjectFromTemplate.private")
-    String createProjectFromTemplatePrivate();
+  @Key("action.switch.project.explorer.displaying.title")
+  String switchProjectExplorerDisplayingTitle();
 
-    @Key("projectWizard.defaultTitleText")
-    String projectWizardDefaultTitleText();
+  @Key("action.switch.project.explorer.displaying.description")
+  String switchProjectExplorerDisplayingDescription();
 
-    @Key("projectWizard.titleText")
-    String projectWizardTitleText();
+  @Key("action.switch.command.explorer.displaying.title")
+  String switchCommandExplorerDisplayingTitle();
 
-    @Key("projectWizard.defaultSaveButtonText")
-    String projectWizardDefaultSaveButtonText();
+  @Key("action.switch.command.explorer.displaying.description")
+  String switchCommandExplorerDisplayingDescription();
 
-    @Key("projectWizard.saveButtonText")
-    String projectWizardSaveButtonText();
+  @Key("action.switch.find.part.displaying.title")
+  String switchFindPartDisplayingTitle();
 
-    @Key("format.name")
-    String formatName();
+  @Key("action.switch.find.part.displaying.description")
+  String switchFindPartDisplayingDescription();
 
-    @Key("format.description")
-    String formatDescription();
+  @Key("action.switch.event.logs.displaying.title")
+  String switchEventLogsDisplayingTitle();
 
-    @Key("undo.name")
-    String undoName();
+  @Key("action.switch.event.logs.displaying.description")
+  String switchEventLogsDisplayingDescription();
 
-    @Key("undo.description")
-    String undoDescription();
+  @Key("action.switch.terminal.displaying.title")
+  String switchTerminalDisplayingTitle();
 
-    @Key("redo.name")
-    String redoName();
+  @Key("action.switch.terminal.displaying.description")
+  String switchTerminalDisplayingDescription();
 
-    @Key("redo.description")
-    String redoDescription();
+  /* RenameItem */
+  @Key("action.rename.text")
+  String renameItemActionText();
 
-    @Key("uploadFile.name")
-    String uploadFileName();
+  @Key("action.rename.description")
+  String renameItemActionDescription();
 
-    @Key("uploadFile.description")
-    String uploadFileDescription();
+  @Key("action.collapseAll.title")
+  String collapseAllActionTitle();
 
-    @Key("uploadFile.title")
-    String uploadFileTitle();
+  @Key("action.collapseAll.description")
+  String collapseAllActionDescription();
 
-    @Key("uploadFile.overwrite")
-    String uploadFileOverwrite();
+  @Key("action.refresh.title")
+  String refreshActionTitle();
 
-    @Key("uploadZipFolder.title")
-    String uploadZipFolderTitle();
+  @Key("action.refresh.description")
+  String refreshActionDescription();
 
-    @Key("uploadFolderFromZip.name")
-    String uploadFolderFromZipName();
+  @Key("renameNodeDialogTitle")
+  String renameNodeDialogTitle();
 
-    @Key("uploadFolderFromZip.description")
-    String uploadFolderFromZipDescription();
+  @Key("renameFileDialogTitle")
+  String renameFileDialogTitle(String name);
 
-    @Key("downloadZip.project.name")
-    String downloadProjectAsZipName();
+  @Key("renameFolderDialogTitle")
+  String renameFolderDialogTitle(String name);
 
-    @Key("downloadZip.project.description")
-    String downloadProjectAsZipDescription();
+  @Key("renameProjectDialogTitle")
+  String renameProjectDialogTitle(String name);
 
-    @Key("download.item.name")
-    String downloadItemName();
+  @Key("renameDialogNewNameLabel")
+  String renameDialogNewNameLabel();
 
-    @Key("download.item.description")
-    String downloadItemDescription();
+  @Key("createProjectFromTemplate.descriptionField")
+  String createProjectFromTemplateDescription();
 
-    @Key("uploadFolderFromZip.overwrite")
-    String uploadFolderFromZipOverwrite();
+  @Key("createProjectFromTemplate.projectPrivacy")
+  String createProjectFromTemplateProjectPrivacy();
 
-    @Key("uploadFolderFromZip.skipFirstLevel")
-    String uploadFolderFromZipSkipFirstLevel();
+  @Key("createProjectFromTemplate.public")
+  String createProjectFromTemplatePublic();
 
-    @Key("cancelButton")
-    String cancelButton();
+  @Key("createProjectFromTemplate.private")
+  String createProjectFromTemplatePrivate();
 
-    @Key("uploadButton")
-    String uploadButton();
+  @Key("projectWizard.defaultTitleText")
+  String projectWizardDefaultTitleText();
 
-    @Key("openFileFieldTitle")
-    String openFileFieldTitle();
+  @Key("projectWizard.titleText")
+  String projectWizardTitleText();
 
-    @Key("uploadFolderFromZip.openZipFieldTitle")
-    String uploadFolderFromZipOpenZipFieldTitle();
+  @Key("projectWizard.defaultSaveButtonText")
+  String projectWizardDefaultSaveButtonText();
 
-    @Key("projectExplorer.button.title")
-    String projectExplorerButtonTitle();
+  @Key("projectWizard.saveButtonText")
+  String projectWizardSaveButtonText();
 
-    @Key("projectExplorer.titleBar.text")
-    String projectExplorerTitleBarText();
+  @Key("format.name")
+  String formatName();
 
-    @Key("importProject.message.success")
-    String importProjectMessageSuccess(String projectName);
+  @Key("format.description")
+  String formatDescription();
 
-    @Key("importProject.message.failure")
-    String importProjectMessageFailure(String projectName);
+  @Key("undo.name")
+  String undoName();
 
-    @Key("importProject.message.startWithWhiteSpace")
-    String importProjectMessageStartWithWhiteSpace();
+  @Key("undo.description")
+  String undoDescription();
 
-    @Key("importProject.message.urlInvalid")
-    String importProjectMessageUrlInvalid();
+  @Key("redo.name")
+  String redoName();
 
-    @Key("importProject.message.unableGetSshKey")
-    String importProjectMessageUnableGetSshKey();
+  @Key("redo.description")
+  String redoDescription();
 
-    @Key("importProjectFromLocation.name")
-    String importProjectFromLocationName();
+  @Key("softWrap")
+  String softWrap();
 
-    @Key("importProjectFromLocation.description")
-    String importProjectFromLocationDescription();
+  @Key("uploadFile.name")
+  String uploadFileName();
 
-    @Key("importLocalProject.name")
-    String importLocalProjectName();
+  @Key("uploadFile.description")
+  String uploadFileDescription();
 
-    @Key("importLocalProject.description")
-    String importLocalProjectDescription();
+  @Key("uploadFile.title")
+  String uploadFileTitle();
 
-    @Key("importLocalProject.openZipTitle")
-    String importLocalProjectOpenZipTitle();
+  @Key("uploadFile.overwrite")
+  String uploadFileOverwrite();
 
-    @Key("importProject.importButton")
-    String importProjectButton();
+  @Key("uploadZipFolder.title")
+  String uploadZipFolderTitle();
 
-    @Key("importProject.importing")
-    String importingProject();
+  @Key("uploadFolderFromZip.name")
+  String uploadFolderFromZipName();
 
-    @Key("importProject.uriFieldTitle")
-    String importProjectUriFieldTitle();
+  @Key("uploadFolderFromZip.description")
+  String uploadFolderFromZipDescription();
 
-    @Key("importProject.viewTitle")
-    String importProjectViewTitle();
+  @Key("downloadZip.project.name")
+  String downloadProjectAsZipName();
 
-    @Key("importProject.importer.info")
-    String importProjectImporterInfo();
+  @Key("downloadZip.project.description")
+  String downloadProjectAsZipDescription();
 
-    @Key("importProject.project.info")
-    String importProjectInfo();
+  @Key("download.item.name")
+  String downloadItemName();
 
-    @Key("importProject.name.prompt")
-    String importProjectNamePrompt();
+  @Key("download.item.description")
+  String downloadItemDescription();
 
-    @Key("importProject.description.prompt")
-    String importProjectDescriptionPrompt();
+  @Key("uploadFolderFromZip.overwrite")
+  String uploadFolderFromZipOverwrite();
 
-    @Key("importProject.zipImporter.skipFirstLevel")
-    String importProjectZipImporterSkipFirstLevel();
+  @Key("uploadFolderFromZip.skipFirstLevel")
+  String uploadFolderFromZipSkipFirstLevel();
 
-    @Key("import.project.error")
-    String importProjectError();
+  @Key("cancelButton")
+  String cancelButton();
 
-    /* Authorization */
-    @Key("authorization.dialog.title")
-    String authorizationDialogTitle();
+  @Key("uploadButton")
+  String uploadButton();
 
-    @Key("authorization.dialog.text")
-    String authorizationDialogText();
+  @Key("openFileFieldTitle")
+  String openFileFieldTitle();
 
-    @Key("oauth.failed.to.get.authenticator.title")
-    String oauthFailedToGetAuthenticatorTitle();
+  @Key("uploadFolderFromZip.openZipFieldTitle")
+  String uploadFolderFromZipOpenZipFieldTitle();
 
-    @Key("oauth.failed.to.get.authenticator.text")
-    String oauthFailedToGetAuthenticatorText();
+  @Key("projectExplorer.linkWithEditor.tooltip")
+  String projectExplorerLinkWithEditorTooltip();
 
-    @Key("importProject.ssh.key.upload.failed.title")
-    String importProjectSshKeyUploadFailedTitle();
+  @Key("projectExplorer.button.title")
+  String projectExplorerButtonTitle();
 
-    @Key("importProject.ssh.key.upload.failed.text")
-    String importProjectSshKeyUploadFailedText();
+  @Key("projectExplorer.titleBar.text")
+  String projectExplorerTitleBarText();
 
-    /* Actions */
-    @Key("action.newFolder.title")
-    String actionNewFolderTitle();
+  @Key("importProject.message.success")
+  String importProjectMessageSuccess(String projectName);
 
-    @Key("action.newFolder.description")
-    String actionNewFolderDescription();
+  @Key("importProject.message.failure")
+  String importProjectMessageFailure(String projectName);
 
-    @Key("action.newFile.title")
-    String actionNewFileTitle();
+  @Key("importProject.message.startWithWhiteSpace")
+  String importProjectMessageStartWithWhiteSpace();
 
-    @Key("action.newFile.description")
-    String actionNewFileDescription();
+  @Key("importProject.message.urlInvalid")
+  String importProjectMessageUrlInvalid();
 
-    @Key("action.newFile.add.to.index.title")
-    String actionNewFileAddToIndexTitle();
+  @Key("importProject.message.unableGetSshKey")
+  String importProjectMessageUnableGetSshKey();
 
-    @Key("action.newFile.add.to.index.text")
-    String actionNewFileAddToIndexText(String file);
+  @Key("importProjectFromLocation.name")
+  String importProjectFromLocationName();
 
-    @Key("action.newFile.add.to.index.notification")
-    String actionNewFileAddToIndexNotification(String file);
+  @Key("importProjectFromLocation.description")
+  String importProjectFromLocationDescription();
 
-    @Key("action.git.index.updated")
-    String actionGitIndexUpdated();
+  @Key("importLocalProject.name")
+  String importLocalProjectName();
 
-    @Key("action.git.index.update.failed")
-    String actionGitIndexUpdateFailed();
+  @Key("importLocalProject.description")
+  String importLocalProjectDescription();
 
-    @Key("action.newXmlFile.title")
-    String actionNewXmlFileTitle();
+  @Key("importLocalProject.openZipTitle")
+  String importLocalProjectOpenZipTitle();
 
-    @Key("action.newXmlFile.description")
-    String actionNewXmlFileDescription();
+  @Key("importProject.importButton")
+  String importProjectButton();
 
-    @Key("action.projectConfiguration.description")
-    String actionProjectConfigurationDescription();
+  @Key("importProject.importing")
+  String importingProject(String projectName);
 
-    @Key("action.projectConfiguration.title")
-    String actionProjectConfigurationTitle();
+  @Key("importProject.uriFieldTitle")
+  String importProjectUriFieldTitle();
 
-    @Key("action.findAction.description")
-    String actionFindActionDescription();
+  @Key("importProject.viewTitle")
+  String importProjectViewTitle();
 
-    @Key("action.findAction.title")
-    String actionFindActionTitle();
+  @Key("importProject.importer.info")
+  String importProjectImporterInfo();
 
-    @Key("action.showHiddenFiles.title")
-    String actionShowHiddenFilesTitle();
+  @Key("importProject.project.info")
+  String importProjectInfo();
 
-    @Key("action.showHiddenFiles.description")
-    String actionShowHiddenFilesDescription();
+  @Key("importProject.name.prompt")
+  String importProjectNamePrompt();
 
-    /* NewResource */
-    @Key("newResource.title")
-    String newResourceTitle(String title);
+  @Key("importProject.description.prompt")
+  String importProjectDescriptionPrompt();
 
-    @Key("newResource.label")
-    String newResourceLabel(String title);
+  @Key("importProject.zipImporter.skipFirstLevel")
+  String importProjectZipImporterSkipFirstLevel();
 
-    @Key("newResource.invalidName")
-    String invalidName();
+  @Key("import.project.error")
+  String importProjectError();
 
-    /* Messages */
-    @Key("messages.changesMayBeLost")
-    String changesMayBeLost();
+  /* Authorization */
+  @Key("authorization.dialog.title")
+  String authorizationDialogTitle();
 
-    @Key("messages.someFilesCanNotBeSaved")
-    String someFilesCanNotBeSaved();
+  @Key("authorization.dialog.text")
+  String authorizationDialogText();
 
-    @Key("messages.saveChanges")
-    String messagesSaveChanges(String name);
+  @Key("oauth.failed.to.get.authenticator.title")
+  String oauthFailedToGetAuthenticatorTitle();
 
-    @Key("messages.promptSaveChanges")
-    String messagesPromptSaveChanges();
+  @Key("oauth.failed.to.get.authenticator.text")
+  String oauthFailedToGetAuthenticatorText();
 
-    @Key("messages.unableOpenResource")
-    String unableOpenResource(String path);
+  @Key("importProject.ssh.key.upload.failed.title")
+  String importProjectSshKeyUploadFailedTitle();
 
-    @Key("messages.canNotOpenFileWithoutParams")
-    String canNotOpenFileWithoutParams();
+  @Key("importProject.ssh.key.upload.failed.text")
+  String importProjectSshKeyUploadFailedText();
 
-    @Key("messages.fileToOpenIsNotSpecified")
-    String fileToOpenIsNotSpecified();
+  /* Actions */
+  @Key("action.newFolder.title")
+  String actionNewFolderTitle();
 
-    @Key("messages.canNotOpenNodeWithoutParams")
-    String canNotOpenNodeWithoutParams();
+  @Key("action.newFolder.description")
+  String actionNewFolderDescription();
 
-    @Key("messages.nodeToOpenIsNotSpecified")
-    String nodeToOpenIsNotSpecified();
+  @Key("action.newFile.title")
+  String actionNewFileTitle();
 
-    @Key("messages.noOpenedProject")
-    String noOpenedProject();
+  @Key("action.newFile.description")
+  String actionNewFileDescription();
 
-    @Key("messages.startingOperation")
-    String startingOperation(String operation);
+  @Key("action.newFile.add.to.index.title")
+  String actionNewFileAddToIndexTitle();
 
-    @Key("messages.startingMachine")
-    String startingMachine(String machineName);
+  @Key("action.newFile.add.to.index.text")
+  String actionNewFileAddToIndexText(String file);
 
-    /* Buttons */
-    @DefaultMessage("Yes")
-    String yesButtonTitle();
+  @Key("action.newFile.add.to.index.notification")
+  String actionNewFileAddToIndexNotification(String file);
 
-    @DefaultMessage("No")
-    String noButtonTitle();
+  @Key("action.git.index.updated")
+  String actionGitIndexUpdated();
 
-    @Key("ok")
-    String ok();
+  @Key("action.git.index.update.failed")
+  String actionGitIndexUpdateFailed();
 
-    @Key("cancel")
-    String cancel();
+  @Key("action.newXmlFile.title")
+  String actionNewXmlFileTitle();
 
-    @Key("open")
-    String open();
+  @Key("action.newXmlFile.description")
+  String actionNewXmlFileDescription();
 
-    @Key("next")
-    String next();
+  @Key("action.link.with.editor")
+  String actionLinkWithEditor();
 
-    @Key("back")
-    String back();
+  @Key("action.show.toolbar")
+  String actionShowToolbar();
 
-    @Key("close")
-    String close();
+  @Key("action.projectConfiguration.description")
+  String actionProjectConfigurationDescription();
 
-    @Key("save")
-    String save();
+  @Key("action.projectConfiguration.title")
+  String actionProjectConfigurationTitle();
 
-    @Key("apply")
-    String apply();
+  @Key("action.previewImage.description")
+  String actionPreviewImageDescription();
 
-    @Key("refresh")
-    String refresh();
+  @Key("action.previewImage.title")
+  String actionPreviewImageTitle();
 
-    @Key("delete")
-    String delete();
+  @Key("action.findAction.description")
+  String actionFindActionDescription();
 
-    @Key("print")
-    String print();
+  @Key("action.findAction.title")
+  String actionFindActionTitle();
 
-    @Key("debug")
-    String debug();
+  @Key("action.showHiddenFiles.title")
+  String actionShowHiddenFilesTitle();
 
-    @Key("projectProblem.title")
-    String projectProblemTitle();
+  @Key("action.showHiddenFiles.description")
+  String actionShowHiddenFilesDescription();
 
-    @Key("projectProblem.message")
-    String projectProblemMessage();
+  @Key("action.maximizePart.title")
+  String actionMaximizePartTitle();
 
-    @Key("action.expandEditor.title")
-    String actionExpandEditorTitle();
+  @Key("action.maximizePart.description")
+  String actionMaximizePartDescription();
 
-    @Key("askWindow.close.title")
-    String askWindowCloseTitle();
+  @Key("action.restorePart.title")
+  String actionRestorePartTitle();
 
-    @Key("action.completions.title")
-    String actionCompetitionsTitle();
+  @Key("action.restorePart.description")
+  String actionRestorePartDescription();
 
-    /* Preferences widget */
-    @Key("unable.to.save.preference")
-    String unableToSavePreference();
+  @Key("action.hidePart.title")
+  String actionHidePartTitle();
 
-    @Key("unable.to.load.preference")
-    String unableToLoadPreference();
+  @Key("action.hidePart.description")
+  String actionHidePartDescription();
 
-    @Key("create.ws.title")
-    String createWsTitle();
+  @Key("maximizePartStack.title")
+  String maximizePartStackTitle();
 
-    @Key("create.ws.recipe.url")
-    String createWsRecipeUrl();
+  @Key("restorePartStack.title")
+  String restorePartStackTitle();
 
-    @Key("create.ws.find.by.tags")
-    String createWsFindByTags();
+  @Key("minimizePartStack.title")
+  String minimizePartStackTitle();
 
-    @Key("create.ws.name")
-    String createWsName();
+  @Key("partStackOptions.title")
+  String partStackOptionsTitle();
 
-    @Key("create.ws.url.not.valid")
-    String createWsUrlNotValid();
+  /* NewResource */
+  @Key("newResource.title")
+  String newResourceTitle(String title);
 
-    @Key("create.ws.recipe.not.found")
-    String createWsRecipeNotFound();
+  @Key("newResource.label")
+  String newResourceLabel(String title);
 
-    @Key("create.ws.button")
-    String createWsButton();
+  @Key("newResource.invalidName")
+  String invalidName();
 
-    @Key("create.ws.default.name")
-    String createWsDefaultName();
+  /* Messages */
+  @Key("messages.closeTabConfirmation")
+  String closeTabConfirmation();
 
-    @Key("create.ws.name.is.not.correct")
-    String createWsNameIsNotCorrect();
+  @Key("messages.changesMayBeLost")
+  String changesMayBeLost();
 
-    @Key("create.ws.predefined.recipe")
-    String createWsPredefinedRecipe();
+  @Key("messages.someFilesCanNotBeSaved")
+  String someFilesCanNotBeSaved();
 
-    @Key("placeholder.input.recipe.url")
-    String placeholderInputRecipeUrl();
+  @Key("messages.saveChanges")
+  String messagesSaveChanges(String name);
 
-    @Key("placeholder.choose.predefined")
-    String placeholderChoosePredefined();
+  @Key("messages.promptSaveChanges")
+  String messagesPromptSaveChanges();
 
-    @Key("placeholder.find.by.tags")
-    String placeholderFindByTags();
+  @Key("messages.unableOpenResource")
+  String unableOpenResource(String path);
 
-    @Key("start.ws.button")
-    String startWsButton();
+  @Key("messages.canNotOpenFileInSplitMode")
+  String canNotOpenFileInSplitMode(String path);
 
-    @Key("placeholder.select.ws.to.start")
-    String placeholderSelectWsToStart();
+  @Key("messages.canNotOpenFileWithoutParams")
+  String canNotOpenFileWithoutParams();
 
-    @Key("start.ws.title")
-    String startWsTitle();
+  @Key("messages.fileToOpenIsNotSpecified")
+  String fileToOpenIsNotSpecified();
 
-    @Key("start.ws.select.to.start")
-    String startWsSelectToStart();
+  @Key("messages.fileToOpenLineIsNotANumber")
+  String fileToOpenLineIsNotANumber();
 
-    @Key("stop.ws.title")
-    String stopWsTitle();
+  @Key("messages.canNotOpenNodeWithoutParams")
+  String canNotOpenNodeWithoutParams();
 
-    @Key("stop.ws.description")
-    String stopWsDescription();
+  @Key("messages.nodeToOpenIsNotSpecified")
+  String nodeToOpenIsNotSpecified();
 
-    @Key("started.ws")
-    String startedWs();
+  @Key("messages.noOpenedProject")
+  String noOpenedProject();
 
-    @Key("create.snapshot.title")
-    String createSnapshotTitle();
+  @Key("messages.startingOperation")
+  String startingOperation(String operation);
 
-    @Key("create.snapshot.description")
-    String createSnapshotDescription();
+  @Key("messages.startingMachine")
+  String startingMachine(String machineName);
 
-    @Key("create.snapshot.progress")
-    String createSnapshotProgress();
+  /* Buttons */
+  @DefaultMessage("Yes")
+  String yesButtonTitle();
 
-    @Key("create.snapshot.success")
-    String createSnapshotSuccess();
+  @DefaultMessage("No")
+  String noButtonTitle();
 
-    @Key("create.snapshot.failed")
-    String createSnapshotFailed();
+  @Key("ok")
+  String ok();
 
-    @Key("ext.server.started")
-    String extServerStarted();
+  @Key("cancel")
+  String cancel();
 
-    @Key("ext.server.stopped")
-    String extServerStopped();
+  @Key("open")
+  String open();
 
-    @Key("workspace.recovering.dialog.title")
-    String workspaceRecoveringDialogTitle();
+  @Key("next")
+  String next();
 
-    @Key("workspace.recovering.dialog.text")
-    String workspaceRecoveringDialogText();
+  @Key("back")
+  String back();
 
-    @Key("workspace.restore.snapshot")
-    String restoreWorkspaceFromSnapshot();
+  @Key("close")
+  String close();
 
-    @Key("workspace.subscribe.on.events.failed")
-    String workspaceSubscribeOnEventsFailed();
+  @Key("save")
+  String save();
 
-    @Key("workspace.start.failed")
-    String workspaceStartFailed();
+  @Key("apply")
+  String apply();
 
-    @Key("failed.to.load.factory")
-    String failedToLoadFactory();
+  @Key("refresh")
+  String refresh();
 
-    @Key("workspace.config.undefined")
-    String workspaceConfigUndefined();
+  @Key("delete")
+  String delete();
 
-    @Key("workspace.id.undefined")
-    String workspaceIdUndefined();
+  @Key("print")
+  String print();
 
-    @Key("workspace.get.failed")
-    String workspaceGetFailed();
+  @Key("debug")
+  String debug();
 
-    @Key("workspace.not.ready")
-    String workspaceNotReady(String workspaceId);
+  @Key("projectProblem.title")
+  String projectProblemTitle();
 
-    @Key("workspace.not.running")
-    String workspaceNotRunning();
+  @Key("projectProblem.message")
+  String projectProblemMessage();
 
-    @Key("start.ws.error.title")
-    String startWsErrorTitle();
+  @Key("action.expandEditor.title")
+  String actionExpandEditorTitle();
 
-    @Key("start.ws.error.content")
-    String startWsErrorContent(String workspaceName, String reason);
+  @Key("askWindow.close.title")
+  String askWindowCloseTitle();
 
-    @Key("create.ws.name.length.is.not.correct")
-    String createWsNameLengthIsNotCorrect();
+  @Key("action.completions.title")
+  String actionCompetitionsTitle();
 
-    @Key("create.ws.name.already.exist")
-    String createWsNameAlreadyExist();
+  /* Preferences widget */
+  @Key("unable.to.save.preference")
+  String unableToSavePreference();
 
-    @Key("get.ws.error.dialog.title")
-    String getWsErrorDialogTitle();
+  @Key("unable.to.load.preference")
+  String unableToLoadPreference();
 
-    @Key("get.ws.error.dialog.content")
-    String getWsErrorDialogContent(String reason);
+  @Key("create.ws.title")
+  String createWsTitle();
 
-    @Key("project.explorer.project.configuration.failed")
-    String projectExplorerProjectConfigurationFailed(String name);
+  @Key("create.ws.recipe.url")
+  String createWsRecipeUrl();
 
-    @Key("project.explorer.project.update.failed")
-    String projectExplorerProjectUpdateFailed();
+  @Key("create.ws.find.by.tags")
+  String createWsFindByTags();
 
-    @Key("project.explorer.projects.load.failed")
-    String projectExplorerProjectsLoadFailed();
+  @Key("create.ws.name")
+  String createWsName();
 
-    @Key("project.explorer.invalid.project.detected")
-    String projectExplorerInvalidProjectDetected();
+  @Key("create.ws.url.not.valid")
+  String createWsUrlNotValid();
 
-    @Key("project.explorer.detected.unconfigured.project")
-    String projectExplorerDetectedUnconfiguredProject();
+  @Key("create.ws.recipe.not.found")
+  String createWsRecipeNotFound();
 
-    @Key("project.explorer.extension.server.stopped")
-    String projectExplorerExtensionServerStopped();
+  @Key("create.ws.button")
+  String createWsButton();
 
-    @Key("project.explorer.extension.server.stopped.description")
-    String projectExplorerExtensionServerStoppedDescription();
+  @Key("create.ws.default.name")
+  String createWsDefaultName();
 
-    @Key("project.explorer.part.tooltip")
-    String projectExplorerPartTooltip();
+  @Key("create.ws.name.is.not.correct")
+  String createWsNameIsNotCorrect();
 
-    @Key("switch.to.left.editor.action.description")
-    String switchToLeftEditorActionDescription();
+  @Key("create.ws.predefined.recipe")
+  String createWsPredefinedRecipe();
 
-    @Key("switch.to.left.editor.action")
-    String switchToLeftEditorAction();
+  @Key("placeholder.input.recipe.url")
+  String placeholderInputRecipeUrl();
 
-    @Key("switch.to.right.editor.action.description")
-    String switchToRightEditorActionDescription();
+  @Key("placeholder.choose.predefined")
+  String placeholderChoosePredefined();
 
-    @Key("switch.to.right.editor.action")
-    String switchToRightEditorAction();
+  @Key("placeholder.find.by.tags")
+  String placeholderFindByTags();
 
-    @Key("key.bindings.action.name")
-    String keyBindingsActionName();
+  @Key("start.ws.button")
+  String startWsButton();
 
-    @Key("key.bindings.action.description")
-    String keyBindingsActionDescription();
+  @Key("restart.ws.agent.button")
+  String restartWsAgentButton();
 
-    @Key("key.bindings.dialog.title")
-    String keyBindingsDialogTitle();
+  @Key("ignore.ws.agent.button")
+  String ignoreWsAgentButton();
 
-    @Key("hot.keys.table.action.description.title")
-    String hotKeysTableActionDescriptionTitle();
+  @Key("placeholder.select.ws.to.start")
+  String placeholderSelectWsToStart();
 
-    @Key("hot.keys.table.item.title")
-    String hotKeysTableItemTitle();
+  @Key("start.ws.title")
+  String startWsTitle();
 
-    @Key("action.full.text.search")
-    String actionFullTextSearch();
+  @Key("start.ws.description")
+  String startWsDescription();
 
-    @Key("action.full.text.search.description")
-    String actionFullTextSearchDescription();
+  @Key("stop.ws.title")
+  String stopWsTitle();
 
-    String search();
+  @Key("stop.ws.description")
+  String stopWsDescription();
 
-    @Key("text.search.scope.label")
-    String textSearchScopeLabel();
+  @Key("started.ws")
+  String startedWs();
 
-    @Key("text.search.fileFilter.label")
-    String textSearchFileFilterLabel();
+  @Key("ext.server.started")
+  String extServerStarted();
 
-    @Key("text.search.content.label")
-    String textSearchContentLabel();
+  @Key("ext.server.stopped")
+  String extServerStopped();
 
-    @Key("text.search.title")
-    String textSearchTitle();
+  @Key("workspace.recovering.dialog.title")
+  String workspaceRecoveringDialogTitle();
 
-    @Key("text.search.file.mask")
-    String textSearchFileMask();
+  @Key("workspace.subscribe.on.events.failed")
+  String workspaceSubscribeOnEventsFailed();
 
-    @Key("text.search.directory")
-    String textSearchDirectory();
+  @Key("workspace.start.failed")
+  String workspaceStartFailed();
 
-    @Key("select.path.window.title")
-    String selectPathWindowTitle();
+  @Key("failed.to.load.factory")
+  String failedToLoadFactory();
 
-    @Key("open.recent.file.title")
-    String openRecentFileTitle();
+  @Key("workspace.config.undefined")
+  String workspaceConfigUndefined();
 
-    @Key("open.recent.file.description")
-    String openRecentFileDescription();
+  @Key("workspace.id.undefined")
+  String workspaceIdUndefined();
 
-    @Key("open.recent.files.title")
-    String openRecentFilesTitle();
+  @Key("workspace.get.failed")
+  String workspaceGetFailed();
 
-    @Key("open.recent.file.clear.title")
-    String openRecentFileClearTitle();
+  @Key("workspace.not.ready")
+  String workspaceNotReady(String workspaceId);
 
-    @Key("open.recent.file.clear.description")
-    String openRecentFileClearDescription();
+  @Key("workspace.not.running")
+  String workspaceNotRunning();
 
-    @Key("editor.tab.context.menu.split.vertically")
-    String editorTabSplitVertically();
+  @Key("workspace.status.title")
+  String workspaceStatusTitle();
 
-    @Key("editor.tab.context.menu.split.vertically.description")
-    String editorTabSplitVerticallyDescription();
+  @Key("start.ws.error.title")
+  String startWsErrorTitle();
 
-    @Key("editor.tab.context.menu.split.horizontally")
-    String editorTabSplitHorizontally();
+  @Key("start.ws.error.content")
+  String startWsErrorContent(String workspaceName, String reason);
 
-    @Key("editor.tab.context.menu.split.horizontally.description")
-    String editorTabSplitHorizontallyDescription();
+  @Key("create.ws.name.length.is.not.correct")
+  String createWsNameLengthIsNotCorrect();
 
-    @Key("editor.tab.context.menu.close")
-    String editorTabClose();
+  @Key("create.ws.name.already.exist")
+  String createWsNameAlreadyExist();
 
-    @Key("editor.tab.context.menu.close.description")
-    String editorTabCloseDescription();
+  @Key("get.ws.error.dialog.title")
+  String getWsErrorDialogTitle();
 
-    @Key("editor.tab.context.menu.close.all")
-    String editorTabCloseAll();
+  @Key("get.ws.error.dialog.content")
+  String getWsErrorDialogContent(String reason);
 
-    @Key("editor.tab.context.menu.close.all.description")
-    String editorTabCloseAllDescription();
+  @Key("project.explorer.project.configuration.failed")
+  String projectExplorerProjectConfigurationFailed(String name);
 
-    @Key("editor.tab.context.menu.close.all.but.pinned")
-    String editorTabCloseAllButPinned();
+  @Key("project.explorer.project.update.failed")
+  String projectExplorerProjectUpdateFailed();
 
-    @Key("editor.tab.context.menu.close.all.but.pinned.description")
-    String editorTabCloseAllButPinnedDescription();
+  @Key("project.explorer.projects.load.failed")
+  String projectExplorerProjectsLoadFailed();
 
-    @Key("editor.tab.context.menu.close.all.except.selected")
-    String editorTabCloseAllExceptSelected();
+  @Key("project.explorer.invalid.project.detected")
+  String projectExplorerInvalidProjectDetected();
 
-    @Key("editor.tab.context.menu.close.all.except.selected.description")
-    String editorTabCloseAllExceptSelectedDescription();
+  @Key("project.explorer.detected.unconfigured.project")
+  String projectExplorerDetectedUnconfiguredProject();
 
-    @Key("editor.tab.context.menu.pin")
-    String editorTabPin();
+  @Key("project.explorer.extension.server.stopped")
+  String projectExplorerExtensionServerStopped();
 
-    @Key("editor.tab.context.menu.pin.description")
-    String editorTabPinDescription();
+  @Key("project.explorer.extension.server.stopped.description")
+  String projectExplorerExtensionServerStoppedDescription();
 
-    @Key("editor.tab.context.menu.reopen.closed.tab")
-    String editorTabReopenClosedTab();
+  @Key("project.explorer.part.tooltip")
+  String projectExplorerPartTooltip();
 
-    @Key("editor.tab.context.menu.reopen.closed.tab.description")
-    String editorTabReopenClosedTabDescription();
+  @Key("switch.to.left.editor.action.description")
+  String switchToLeftEditorActionDescription();
 
-    @Key("failed.to.copy.items")
-    String failedToCopyItems();
+  @Key("switch.to.left.editor.action")
+  String switchToLeftEditorAction();
 
-    @Key("failed.to.move.items")
-    String failedToMoveItems();
+  @Key("switch.to.right.editor.action.description")
+  String switchToRightEditorActionDescription();
 
-    @Key("failed.to.update.project")
-    String failedToUpdateProject(String name);
+  @Key("switch.to.right.editor.action")
+  String switchToRightEditorAction();
 
-    @Key("failed.to.import.project")
-    String failedToImportProject();
+  @Key("key.bindings.action.name")
+  String keyBindingsActionName();
 
-    @Key("failed.to.upload.files")
-    String failedToUploadFiles();
+  @Key("key.bindings.action.description")
+  String keyBindingsActionDescription();
 
-    @Key("failed.to.upload.files.from.zip")
-    String failedToUploadFilesFromZip();
+  @Key("key.bindings.dialog.title")
+  String keyBindingsDialogTitle();
 
-    @Key("synchronize.dialog.title")
-    String synchronizeDialogTitle();
+  @Key("hot.keys.table.action.description.title")
+  String hotKeysTableActionDescriptionTitle();
 
-    @Key("button.import")
-    String buttonImport();
+  @Key("hot.keys.table.item.title")
+  String hotKeysTableItemTitle();
 
-    @Key("button.remove")
-    String buttonRemove();
+  @Key("action.full.text.search")
+  String actionFullTextSearch();
 
-    @Key("project.removed")
-    String projectRemoved(String projectName);
+  @Key("action.full.text.search.description")
+  String actionFullTextSearchDescription();
 
-    @Key("project.remove.error")
-    String projectRemoveError(String projectName);
+  @Key("text.search.wholeword.label")
+  String textSearchFileWholeWordLabel();
 
-    @Key("location.incorrect")
-    String locationIncorrect();
+  String search();
 
-    @Key("exist.in.workspace.dialog.content")
-    String existInWorkspaceDialogContent(String projectName);
+  @Key("text.search.scope.label")
+  String textSearchScopeLabel();
 
-    @Key("exist.in.file.system.dialog.content")
-    String existInFileSystemDialogContent(String projectName);
+  @Key("text.search.fileFilter.label")
+  String textSearchFileFilterLabel();
 
-    @Key("button.configure")
-    String buttonConfigure();
+  @Key("text.search.content.label")
+  String textSearchContentLabel();
 
-    @Key("location.dialog.title")
-    String locationDialogTitle();
+  @Key("text.search.title")
+  String textSearchTitle();
 
-    @Key("project.configuration.changed")
-    String projectConfigurationChanged();
+  @Key("text.search.file.mask")
+  String textSearchFileMask();
 
-    @Key("button.keep.blank")
-    String buttonKeepBlank();
+  @Key("text.search.directory")
+  String textSearchDirectory();
 
-    @Key("project.update.error")
-    String projectUpdateError(String projectName);
+  @Key("select.path.window.title")
+  String selectPathWindowTitle();
 
-    @Key("project.status.title")
-    String projectStatusTitle();
+  @Key("open.recent.file.title")
+  String openRecentFileTitle();
 
-    @Key("project.status.content")
-    String projectStatusContent(String projectName);
+  @Key("open.recent.file.description")
+  String openRecentFileDescription();
 
-    @Key("error.configuration.title")
-    String errorConfigurationTitle();
+  @Key("open.recent.files.title")
+  String openRecentFilesTitle();
 
-    @Key("error.configuration.content")
-    String errorConfigurationContent();
+  @Key("open.recent.file.clear.title")
+  String openRecentFileClearTitle();
 
-    @Key("show.reference")
-    String showReference();
+  @Key("open.recent.file.clear.description")
+  String openRecentFileClearDescription();
 
-    @Key("reference.label")
-    String referenceLabel();
+  @Key("editor.pane.menu.close.pane")
+  String editorClosePane();
 
-    @Key("path.label")
-    String pathLabel();
+  @Key("editor.pane.menu.close.pane.description")
+  String editorClosePaneDescription();
 
-    @Key("parent.directory")
-    String projectRoot();
+  @Key("editor.pane.menu.close.all.in.pane")
+  String editorCloseAllTabsInPane();
 
-    @Key("action.convert.folder.to.project")
-    String actionConvertFolderToProject();
+  @Key("editor.pane.menu.close.all.in.pane.description")
+  String editorCloseAllTabsInPaneDescription();
 
-    @Key("action.convert.folder.to.project.description")
-    String actionConvertFolderToProjectDescription();
+  @Key("editor.tab.context.menu.split.vertically")
+  String editorTabSplitVertically();
+
+  @Key("editor.tab.context.menu.split.vertically.description")
+  String editorTabSplitVerticallyDescription();
+
+  @Key("editor.tab.context.menu.split.horizontally")
+  String editorTabSplitHorizontally();
+
+  @Key("editor.tab.context.menu.split.horizontally.description")
+  String editorTabSplitHorizontallyDescription();
+
+  @Key("editor.tab.context.menu.close")
+  String editorTabClose();
+
+  @Key("editor.tab.context.menu.close.description")
+  String editorTabCloseDescription();
+
+  @Key("editor.tab.context.menu.close.all")
+  String editorTabCloseAll();
+
+  @Key("editor.tab.context.menu.close.all.description")
+  String editorTabCloseAllDescription();
+
+  @Key("editor.tab.context.menu.close.all.but.pinned")
+  String editorTabCloseAllButPinned();
+
+  @Key("editor.tab.context.menu.close.all.but.pinned.description")
+  String editorTabCloseAllButPinnedDescription();
+
+  @Key("editor.tab.context.menu.close.all.except.selected")
+  String editorTabCloseAllExceptSelected();
+
+  @Key("editor.tab.context.menu.close.all.except.selected.description")
+  String editorTabCloseAllExceptSelectedDescription();
+
+  @Key("editor.tab.context.menu.pin")
+  String editorTabPin();
+
+  @Key("editor.tab.context.menu.pin.description")
+  String editorTabPinDescription();
+
+  @Key("editor.tab.context.menu.reopen.closed.tab")
+  String editorTabReopenClosedTab();
+
+  @Key("editor.tab.context.menu.reopen.closed.tab.description")
+  String editorTabReopenClosedTabDescription();
+
+  @Key("failed.to.copy.items")
+  String failedToCopyItems();
+
+  @Key("failed.to.move.items")
+  String failedToMoveItems();
+
+  @Key("failed.to.update.project")
+  String failedToUpdateProject(String name);
+
+  @Key("failed.to.import.project")
+  String failedToImportProject();
+
+  @Key("failed.to.upload.files")
+  String failedToUploadFiles();
+
+  @Key("failed.to.upload.files.from.zip")
+  String failedToUploadFilesFromZip();
+
+  @Key("synchronize.dialog.title")
+  String synchronizeDialogTitle();
+
+  @Key("button.import")
+  String buttonImport();
+
+  @Key("button.remove")
+  String buttonRemove();
+
+  @Key("project.removed")
+  String projectRemoved(String projectName);
+
+  @Key("project.remove.error")
+  String projectRemoveError(String projectName);
+
+  @Key("location.incorrect")
+  String locationIncorrect();
+
+  @Key("exist.in.workspace.dialog.content")
+  String existInWorkspaceDialogContent(String projectName);
+
+  @Key("exist.in.file.system.dialog.content")
+  String existInFileSystemDialogContent(String projectName);
+
+  @Key("button.configure")
+  String buttonConfigure();
+
+  @Key("location.dialog.title")
+  String locationDialogTitle();
+
+  @Key("project.configuration.changed")
+  String projectConfigurationChanged();
+
+  @Key("button.keep.blank")
+  String buttonKeepBlank();
+
+  @Key("project.update.error")
+  String projectUpdateError(String projectName);
+
+  @Key("project.status.title")
+  String projectStatusTitle();
+
+  @Key("project.status.content")
+  String projectStatusContent(String projectName);
+
+  @Key("error.configuration.title")
+  String errorConfigurationTitle();
+
+  @Key("error.configuration.content")
+  String errorConfigurationContent();
+
+  @Key("show.reference")
+  String showReference();
+
+  @Key("reference.label")
+  String referenceLabel();
+
+  @Key("path.label")
+  String pathLabel();
+
+  @Key("parent.directory")
+  String projectRoot();
+
+  @Key("action.convert.folder.to.project")
+  String actionConvertFolderToProject();
+
+  @Key("action.convert.folder.to.project.description")
+  String actionConvertFolderToProjectDescription();
+
+  @Key("signature.name")
+  String signatureName();
+
+  @Key("signature.description")
+  String signatureDescription();
+
+  @Key("macro.editor.current.project.name.description")
+  String macroEditorCurrentProjectNameDescription();
+
+  @Key("macro.editor.current.project.type.description")
+  String macroEditorCurrentProjectTypeDescription();
+
+  @Key("macro.editor.current.file.relpath.description")
+  String macroEditorCurrentFileRelpathDescription();
+
+  @Key("macro.editor.current.file.name.description")
+  String macroEditorCurrentFileNameDescription();
+
+  @Key("macro.editor.current.file.base.name.description")
+  String macroEditorCurrentFileBaseNameDescription();
+
+  @Key("macro.editor.current.file.path.description")
+  String macroEditorCurrentFilePathDescription();
+
+  @Key("macro.workspace.name.description")
+  String macroWorkspaceNameDescription();
+
+  @Key("macro.workspace.namespace.description")
+  String macroWorkspaceNamespaceDescription();
+
+  @Key("macro.explorer.current.file.name.description")
+  String macroExplorerCurrentFileNameDescription();
+
+  @Key("macro.explorer.current.file.base.name.description")
+  String macroExplorerCurrentFileBaseNameDescription();
+
+  @Key("macro.explorer.current.project.name.description")
+  String macroExplorerCurrentProjectNameDescription();
+
+  @Key("macro.explorer.current.file.relpath.description")
+  String macroExplorerCurrentFileRelpathDescription();
+
+  @Key("macro.explorer.current.project.type.description")
+  String macroExplorerCurrentProjectTypeDescription();
+
+  @Key("macro.explorer.current.file.parent.path.description")
+  String macroExplorerCurrentFileParentPathDescription();
+
+  @Key("macro.explorer.current.file.path.description")
+  String macroExplorerCurrentFilePathDescription();
+
+  @Key("empty.state.no.projects")
+  String emptyStateNoProjects();
+
+  @Key("empty.state.no.files")
+  String emptyStateNoFiles();
+
+  @Key("authentication.dialog.title")
+  String authenticationDialogTitle();
+
+  @Key("authentication.dialog.username")
+  String authenticationDialogUsername();
+
+  @Key("authentication.dialog.password")
+  String authenticationDialogPassword();
+
+  @Key("authentication.dialog.authenticate.button")
+  String authenticationDialogAuthenticate();
+
+  @Key("authentication.dialog.rejected.by.user")
+  String authenticationDialogRejectedByUser();
+
+  /* Factories */
+  @Key("projects.import.configuring.cloning")
+  String cloningSource();
+
+  @Key("create.factory.action.title")
+  String createFactoryActionTitle();
+
+  @Key("create.factory.already.exist")
+  String createFactoryAlreadyExist();
+
+  @Key("create.factory.unable.create.from.current.workspace")
+  String createFactoryFromCurrentWorkspaceFailed();
+
+  @Key("create.factory.form.title")
+  String createFactoryTitle();
+
+  @Key("create.factory.label.name")
+  String createFactoryName();
+
+  @Key("create.factory.label.link")
+  String createFactoryLink();
+
+  @Key("create.factory.button.create")
+  String createFactoryButton();
+
+  @Key("create.factory.button.close")
+  String createFactoryButtonClose();
+
+  @Key("create.factory.configure.button.tooltip")
+  String createFactoryConfigureTooltip();
+
+  @Key("create.factory.launch.button.tooltip")
+  String createFactoryLaunchTooltip();
+
+  @Key("import.config.view.name")
+  String importFromConfigurationName();
+
+  @Key("import.config.view.description")
+  String importFromConfigurationDescription();
+
+  @Key("project.import.configured.cloned")
+  String clonedSource(String projectName);
+
+  @Key("import.config.form.button.import")
+  String importButton();
+
+  @Key("import.config.view.title")
+  String importFromConfigurationTitle();
+
+  @Key("import.config.form.prompt")
+  String configFileTitle();
+
+  @Key("project.already.imported")
+  String projectAlreadyImported(String projectName);
+
+  @Key("project.import.cloned.with.checkout")
+  String clonedSourceWithCheckout(String projectName, String repoName, String ref, String branch);
+
+  @Key("project.import.cloned.with.checkout.start.point")
+  String clonedWithCheckoutOnStartPoint(
+      String projectName, String repoName, String startPoint, String branch);
+
+  @Key("project.import.configuring.cloning")
+  String cloningSource(String projectName);
+
+  @Key("project.import.ssh.key.upload.failed.title")
+  String cloningSourceSshKeyUploadFailedTitle();
+
+  @Key("project.import.ssh.key.upload.failed.text")
+  String cloningSourcesSshKeyUploadFailedText();
+
+  @Key("message.ssh.key.not.found.text")
+  String acceptSshNotFoundText();
+
+  @Key("project.import.cloning.failed.without.start.point")
+  String cloningSourceWithCheckoutFailed(String branch, String repoName);
+
+  @Key("project.import.cloning.failed.with.start.point")
+  String cloningSourceCheckoutFailed(String project, String branch);
+
+  @Key("project.import.cloning.failed.title")
+  String cloningSourceFailedTitle(String projectName);
+
+  @Key("project.import.configuring.failed")
+  String configuringSourceFailed(String projectName);
+
+  @Key("welcome.preferences.title")
+  String welcomePreferencesTitle();
+
+  @Key("export.config.view.name")
+  String exportConfigName();
+
+  @Key("export.config.view.description")
+  String exportConfigDescription();
+
+  @Key("export.config.error.message")
+  String exportConfigErrorMessage();
+
+  @Key("export.config.dialog.not.under.vcs.title")
+  String exportConfigDialogNotUnderVcsTitle();
+
+  @Key("export.config.dialog.not.under.vcs.text")
+  String exportConfigDialogNotUnderVcsText();
+
+  @Key("macro.current.project.path.description")
+  String macroCurrentProjectPathDescription();
+
+  @Key("macro.current.project.eldest.parent.path.description")
+  String macroCurrentProjectEldestParentPathDescription();
+
+  @Key("macro.current.project.relpath.description")
+  String macroCurrentProjectRelpathDescription();
+
+  @Key("macro.machine.dev.hostname.description")
+  String macroMachineDevHostnameDescription();
+
+  @Key("failed.to.connect.the.terminal")
+  String failedToConnectTheTerminal();
+
+  @Key("connection.failed.with.terminal")
+  String connectionFailedWithTerminal();
+
+  @Key("terminal.error.connection")
+  String terminalErrorConnection();
+
+  @Key("terminal.can.not.load.script")
+  String terminalCanNotLoadScript();
+
+  @Key("terminal.restart.trying")
+  String terminalTryRestarting();
+
+  @Key("terminal.error.start")
+  String terminalErrorStart();
+
+  @Key("view.processes.title")
+  String viewProcessesTitle();
+
+  @Key("view.processes.tooltip")
+  String viewProcessesTooltip();
+
+  @Key("messages.machine.not.found")
+  String machineNotFound(String machineId);
+
+  @Key("message.projectCreated")
+  String projectCreated(String projectName);
+
+  @Key("message.switch.editors.in.readOnly.mode")
+  String messageSwitchEditorsInReadOnlyMode();
+
+  @Key("ssh.connect.info")
+  String sshConnectInfo(
+      String machineName,
+      String machineHost,
+      String machinePort,
+      String workspaceName,
+      String userName,
+      String sshKeyDetails);
+
+  @Key("ssh.connect.ssh.key.available")
+  String sshConnectInfoPrivateKey(String privateKey);
+
+  @Key("ssh.connect.ssh.key.not.available")
+  String sshConnectInfoNoPrivateKey();
+
+  @Key("failed.to.execute.command")
+  String failedToExecuteCommand();
+
+  /* OutputsContainerView */
+  @Key("view.outputsConsole.stopProcessConfirmation")
+  String outputsConsoleViewStopProcessConfirmation(String processName);
+
+  @Key("view.processes.terminal.node.title")
+  String viewProcessesTerminalNodeTitle(String terminalIndex);
+
+  @Key("failed.to.get.processes")
+  String failedToGetProcesses(String machineId);
+
+  @Key("control.runCommand.empty.params")
+  String runCommandEmptyParamsMessage();
+
+  @Key("control.runCommand.empty.name")
+  String runCommandEmptyNameMessage();
+
+  @Key("control.terminal.new")
+  String newTerminal();
+
+  @Key("control.terminal.create.description")
+  String newTerminalDescription();
+
+  @Key("machine.output.action.title")
+  String machineOutputActionTitle();
+
+  @Key("machine.output.action.description")
+  String machineOutputActionDescription();
+
+  @Key("machine.ssh.action.title")
+  String machineSSHActionTitle();
+
+  @Key("machine.ssh.action.description")
+  String machineSSHActionDescription();
+
+  @Key("control.connect.ssh")
+  String connectViaSSH();
+
+  @Key("action.showConsoleTree.title")
+  String actionShowConsoleTreeTitle();
+
+  @Key("control.rerun.title")
+  String reRunControlTitle();
+
+  @Key("control.rerun.description")
+  String reRunControlDescription();
+
+  @Key("control.stop.title")
+  String stopControlTitle();
+
+  @Key("control.stop.description")
+  String stopControlDescription();
+
+  @Key("control.close.title")
+  String closeControlTitle();
+
+  @Key("control.close.description")
+  String closeControlDescription();
+
+  @Key("consoles.reRunButton.tooltip")
+  String consolesReRunButtonTooltip();
+
+  @Key("consoles.stopButton.tooltip")
+  String consolesStopButtonTooltip();
+
+  @Key("consoles.clearOutputsButton.tooltip")
+  String consolesClearOutputsButtonTooltip();
+
+  @Key("consoles.wrapTextButton.tooltip")
+  String consolesWrapTextButtonTooltip();
+
+  @Key("consoles.autoScrollButton.tooltip")
+  String consolesAutoScrollButtonTooltip();
+
+  @Key("view.processes.command.title")
+  String viewProcessesCommandTitle();
+
+  @Key("view.stop.process.tooltip")
+  String viewStropProcessTooltip();
+
+  @Key("view.new.terminal.tooltip")
+  String viewNewTerminalTooltip();
+
+  @Key("view.machine.running.tooltip")
+  String viewMachineRunningTooltip();
+
+  @Key("view.close.processOutput.tooltip")
+  String viewCloseProcessOutputTooltip();
+
+  @Key("failed.to.find.machine")
+  String failedToFindMachine(String machineId);
+
+  @Key("menu.loader.machineStarting")
+  String menuLoaderMachineStarting(String machine);
+
+  @Key("menu.loader.machineRunning")
+  String menuLoaderMachineRunning(String machine);
+
+  @Key("menu.loader.workspaceStarted")
+  String menuLoaderWorkspaceStarted();
+
+  @Key("menu.loader.workspaceStopping")
+  String menuLoaderWorkspaceStopping();
+
+  @Key("menu.loader.workspaceStopped")
+  String menuLoaderWorkspaceStopped();
+
+  @Key("menu.loader.waitingWorkspace")
+  String menuLoaderWaitingWorkspace();
+
+  @Key("menu.loader.pullingImage")
+  String menuLoaderPullingImage(String image);
+
+  @Key("gwt_recompile.action.setup.title")
+  String gwtDevModeSetUpActionTitle();
+
+  @Key("gwt_recompile.action.off.title")
+  String gwtDevModeOffActionTitle();
+
+  @Key("gwt_recompile.dialog.title")
+  String gwtRecompileDialogTitle();
+
+  @Key("gwt_recompile.dialog.message.recompiling")
+  String gwtRecompileDialogRecompilingMessage(String host);
+
+  @Key("gwt_recompile.dialog.message.no_server")
+  String gwtRecompileDialogNoServerMessage();
 }
